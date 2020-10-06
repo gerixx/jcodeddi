@@ -7,6 +7,7 @@ import java.util.Map;
 
 import coded.dependency.injection.Dependency;
 import coded.dependency.injection.Dependent;
+import coded.dependency.injection.Wiring;
 
 public class _WiringHelper {
 
@@ -16,20 +17,23 @@ public class _WiringHelper {
 
 	private static ThreadLocal<String> context = new ThreadLocal<>();
 
+	private String contextName;
+
+	public static void setContext(String ctx) {
+		_WiringHelper.context.set(ctx);
+	}
+
 	public static _WiringHelper getContext() {
 		return getContext(context.get());
 	}
 
-	public static void setContext(String ctx) {
-		context.set(ctx);
-	}
-
 	public static _WiringHelper getContext(String contextName) {
-		wiringContextMap.putIfAbsent(contextName, new _WiringHelper());
+		wiringContextMap.putIfAbsent(contextName, new _WiringHelper(contextName));
 		return wiringContextMap.get(contextName);
 	}
 
-	private _WiringHelper() {
+	private _WiringHelper(String contextName) {
+		this.contextName = contextName;
 	}
 
 	/**
@@ -52,6 +56,12 @@ public class _WiringHelper {
 	public static void restAll() {
 		wiringContextMap.clear();
 		context.set(null);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T getObject(Class<? extends T> targetClass) throws Exception {
+		return (T) Wiring.getContext(contextName)
+			.getOrCreateObject(targetClass, true);
 	}
 
 }

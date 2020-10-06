@@ -4,12 +4,12 @@ import coded.dependency.ijection.internal._WiringHelper;
 
 public class Dependency<T> {
 
-	private Dependent dependent;
 	private T target;
 	private Class<T> targetClass;
 
 	/**
-	 * Creates the proxy that connects the dependent (this) to the target class.
+	 * Creates the proxy that connects the dependent (this) to the target (service).
+	 * Dependencies of the target class are created recursively.
 	 * 
 	 * <pre>
 	 * A -> B
@@ -25,28 +25,19 @@ public class Dependency<T> {
 	 * @param targetClass the target object type (service)
 	 */
 	public Dependency(Dependent d, Class<T> targetClass) {
-		this.dependent = d;
 		this.targetClass = targetClass;
-		_WiringHelper.getContext()
-			.newDependency(d, this);
+		_WiringHelper helperContext = _WiringHelper.getContext();
+		assert helperContext != null;
+		helperContext.newDependency(d, this);
+		try {
+			target = helperContext.getObject(targetClass);
+		} catch (Exception e) {
+			throw new DependencyCreationException(e);
+		}
 	}
 
 	public T get() {
 		return this.target;
-	}
-
-	public Dependent getDependent() {
-		return dependent;
-	}
-
-	@SuppressWarnings("unchecked")
-	boolean set(Object target) {
-		if (targetClass.isAssignableFrom(target.getClass())) {
-			this.target = (T) target;
-			return true;
-		} else {
-			return false;
-		}
 	}
 
 	public Class<T> getTargetClass() {

@@ -20,7 +20,6 @@ public class Wiring {
 	private final List<String> objectConstructionSequenceList = new ArrayList<>();
 	private final String contextName;
 	private State state = State.WIRING_IN_PROGRESS;
-	private boolean isStrictConnect = true;
 
 	private Wiring(String name) {
 		this.contextName = name;
@@ -43,18 +42,6 @@ public class Wiring {
 	}
 
 	/**
-	 * If true {@link #connect(Class, Class)} throws an Exception if same dependency
-	 * is connected twice. Default if false.
-	 * 
-	 * @param isStrictConnect
-	 * @return the injector
-	 */
-	public Wiring setStrictConnect(boolean isStrictConnect) {
-		this.isStrictConnect = isStrictConnect;
-		return this;
-	}
-
-	/**
 	 * Optional, otherwise default constructor is used.
 	 * 
 	 * @param clz
@@ -62,64 +49,33 @@ public class Wiring {
 	 * @return the injector
 	 */
 	public <T> Wiring defineConstruction(Class<? super T> clz, Supplier<? super T> construction) {
-		return define(clz.getName(), construction, null, null);
+		return define(clz, construction, null, null);
 	}
 
 	/**
 	 * Optional
 	 */
 	public <T> Wiring defineStart(Class<? super T> clz, Consumer<? super T> start) {
-		return define(clz.getName(), null, start, null);
+		return define(clz, null, start, null);
 	}
 
 	/**
 	 * Optional
 	 */
 	public <T> Wiring defineStop(Class<? super T> clz, Consumer<? super T> stop) {
-		return define(clz.getName(), null, null, stop);
+		return define(clz, null, null, stop);
 	}
 
 	/**
 	 * Optional
 	 */
 	public <T> Wiring defineStartStop(Class<? super T> clz, Consumer<? super T> start, Consumer<? super T> stop) {
-		return define(clz.getName(), null, start, stop);
+		return define(clz, null, start, stop);
 	}
 
-	/**
-	 * Optional, otherwise default constructor is used.
-	 * 
-	 * @param name         object identifier
-	 * @param construction
-	 * @return the injector
-	 */
-	public <T> Wiring defineConstruction(String name, Supplier<? super T> construction) {
-		return define(name, construction, null, null);
-	}
-
-	/**
-	 * Optional
-	 */
-	public <T> Wiring defineStart(String name, Consumer<? super T> start) {
-		return define(name, null, start, null);
-	}
-
-	/**
-	 * Optional
-	 */
-	public <T> Wiring defineStop(String name, Consumer<? super T> stop) {
-		return define(name, null, null, stop);
-	}
-
-	/**
-	 * Optional
-	 */
-	public <T> Wiring defineStartStop(String name, Consumer<? super T> start, Consumer<? super T> stop) {
-		return define(name, null, start, stop);
-	}
-
-	private <T> Wiring define(String name, Supplier<? super T> construction, Consumer<? super T> start,
+	private <T> Wiring define(Class<? super T> clz, Supplier<? super T> construction, Consumer<? super T> start,
 			Consumer<? super T> stop) {
+		String name = clz.getName();
 		if (construction != null) {
 			objectConstructionMap.put(name, construction);
 		}
@@ -133,22 +89,20 @@ public class Wiring {
 	}
 
 	/**
-	 * Creates objects and wires them up. Defined construction supplier or
-	 * no-argument constructors are invoked to create objects if not created yet.
-	 * Objects are treated as 'singletons. Multiple connects of same classes are
-	 * ignored per default, see also {@link #setStrictConnect(boolean)}.
+	 * Creates dependency objects and wires them up recursively. Defined
+	 * construction supplier or no-argument constructors are invoked to create
+	 * objects if not created yet. Objects are treated as 'singletons' within the
+	 * Wiring context. Multiple connects of same classes are ignored per default,
+	 * see also {@link #setStrictConnect(boolean)}.
 	 */
-	public <T, U> Wiring connect(Class<T> classDependent, Class<U> classTarget) throws Exception {
-		Dependent dependentObj = (Dependent) getOrCreateObject(classDependent);
-		Object targetObj = getOrCreateObject(classTarget);
-		connectImpl(targetObj, dependentObj);
+	public <T, U> Wiring connectAll(Class<T> classDependent) throws Exception {
+		_WiringHelper.setContext(contextName);
+		try {
+			getOrCreateObject(classDependent, true);
+		} finally {
+			_WiringHelper.setContext(null);
+		}
 		return this;
-	}
-
-	private void connectImpl(Object target, Dependent dependent) {
-		List<Dependency<?>> dependencies = _WiringHelper.getContext(contextName)
-			.getDependencies(dependent);
-		wire(dependencies, target);
 	}
 
 	public Wiring await() {
@@ -191,7 +145,7 @@ public class Wiring {
 		return get(clz.getName());
 	}
 
-	public <T> T get(String name) {
+	private <T> T get(String name) {
 		await();
 		return getTypedObject(name);
 	}
@@ -207,6 +161,7 @@ public class Wiring {
 	// A -> B
 	private String indent = "";
 
+	// TODO fix printed tree, print recursive
 	public void print(PrintStream out) {
 		_WiringHelper helper = _WiringHelper.getContext(contextName);
 		objectConstructionSequenceList.forEach(name -> {
@@ -253,49 +208,32 @@ public class Wiring {
 		return (T) objectMap.get(name);
 	}
 
-	private Object getOrCreateObject(Class<?> clz) throws Exception {
+	// TODO move to helper
+	public Object getOrCreateObject(Class<?> clz, boolean isExplicitWiring) throws Exception {
 		String name = clz.getName();
 		if (!objectMap.containsKey(name)) {
-			_WiringHelper.setContext(contextName);
-			try {
-				final Object newObject;
-				if (objectConstructionMap.containsKey(name)) {
-					newObject = objectConstructionMap.get(name)
-						.get();
-				} else {
-					newObject = clz.getDeclaredConstructor()
-						.newInstance();
+			final Object newObject;
+			if (objectConstructionMap.containsKey(name)) {
+				newObject = objectConstructionMap.get(name)
+					.get();
+				if (!newObject.getClass()
+					.getName()
+					.equals(name)) {
+					// name is an interface
+					String nameImpl = newObject.getClass()
+						.getName();
+					objectMap.put(nameImpl, newObject);
+					objectConstructionSequenceList.add(nameImpl);
 				}
-				objectMap.put(name, newObject);
-				objectConstructionSequenceList.add(name);
-			} finally {
-				_WiringHelper.setContext(null);
+			} else {
+				newObject = clz.getDeclaredConstructor()
+					.newInstance();
 			}
+			objectMap.put(name, newObject);
+			objectConstructionSequenceList.add(name);
 		}
 		return objectMap.get(name);
 
-	}
-
-	private void wire(List<Dependency<?>> dependencies, Object dependingOn) {
-		for (Dependency<?> dependency : dependencies) {
-			if (dependency.get() != null) {
-				if (!isStrictConnect && dependency.get()
-					.getClass()
-					.getName()
-					.equals(dependingOn.getClass()
-						.getName())) {
-					throw new IllegalStateException("Class " + dependency.getDependent()
-						.getClass()
-						.getName() + " is already connected to "
-							+ dependingOn.getClass()
-								.getName());
-				}
-				continue;
-			}
-			if (dependency.set(dependingOn)) {
-				break;
-			}
-		}
 	}
 
 	/**

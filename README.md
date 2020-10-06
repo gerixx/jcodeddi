@@ -10,20 +10,19 @@ A -> B, C
 
 ```Java
 Wiring.getContext("myapp")
-	.connect(A.class, B.class)
-	.connect(A.class, C.class)
+	.connectAll(A.class)
 	.await();
 
 class B {
-    void foo() {...}
+	void foo() {...}
 }
 class C {
 }
 class A implements Dependent {
-    Dependency<B> b = new Dependency<>(this, B.class);
-    Dependency<C> c = new Dependency<>(this, C.class);
-    ...
-    b.get().foo(); // b is a proxy to the service object
+	Dependency<B> b = new Dependency<>(this, B.class);
+	Dependency<C> c = new Dependency<>(this, C.class);
+	...
+	b.get().foo(); // b is a proxy to the service object
 }
 
 ```
@@ -32,28 +31,25 @@ A new injector is created with `Wiring.getContext("myapp")`
 
 Proxy based injection: `Dependency<B> b` acts as a proxy and returns with `get()` the service object `B`.
 
-Explicit wiring is done with `Wiring#connect(classFrom, classTo)`, instance creation and wiring is asynchronous and completed with terminal function `Wiring#await()`. 
-
-Implicit wiring is performed with `Wiring#connect(classFrom)`,  
-all depending instances are created recursively. 
+Recursive wiring is done with `Wiring#connectAll(clz)` stargint with creation of `clz`. Instance creation and wiring is asynchronous and completed with terminal function `Wiring#await()`. 
 
 Reflection is per default used for instance creation (`Class#newInstance()`).  But, construction code can be defined to avoid reflection completely:
 
 ```Java
 Wiring.getContext("myapp")
-        .defineConstruction(A.class, A::new)
-        .defineConstruction(B.class, () -> new B(arg1, arg2))
-        .connect(A.class, B.class)
-        ...
+	.defineConstruction(A.class, A::new)
+	.defineConstruction(B.class, () -> new B(arg1, arg2))
+	.connectAll(A.class)
+	...
 ```
 
-For every class only one instance is created within a wiring context.
+Classes are singletons, that means for every class only one instance is created within a wiring context.
 
 ## Features
 
 It is light weight, fast, debugable and transparent.
 
-Asynchronous instance creation and wiring.
+Asynchronous instance creation and wiring. (TODO)
 
 Dependency graph is printable.
 
@@ -98,9 +94,13 @@ class MyAppImpl implements MyApp {
 }
 
 MyApp myApp = Wiring.getContext("app")
-    .define(MyAppImpl.class, app -> app.stop()) // <----- DESTRUCTION lambda
-    .connect(MyAppImpl.class, MyServiceImpl.class)
-    .get(MyAppImpl.class);
+	.defineConstruction(MyService.class, MyServiceImpl::new)
+	defineStartStop(MyAppImpl.class, app -> greets = app.start(), app -> app.stop())
+	.defineStartStop(MyServiceImpl.class, svc -> svc.initialize(), svc -> svc.destroy())
+	.connectAll(MyAppImpl.class)
+	.start()
+	.await()
+   .get(MyAppImpl.class);
 
 myApp.start();
 
@@ -111,5 +111,6 @@ Wiring.getContext("app")
     .await();
 ```
 
+For used interfaces in `Dependency` declarations a construction supplier has to be defined, for interface `MyService` this could be `.defineConstruction(MyService.class, MyServiceImpl::new)`.
 
 https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet

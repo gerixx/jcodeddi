@@ -12,6 +12,7 @@ import coded.dependency.ijection.internal.fortest.B;
 import coded.dependency.ijection.internal.fortest.C;
 import coded.dependency.ijection.internal.fortest.MyApp;
 import coded.dependency.ijection.internal.fortest.MyAppImpl;
+import coded.dependency.ijection.internal.fortest.MyService;
 import coded.dependency.ijection.internal.fortest.MyServiceImpl;
 import coded.dependency.injection.Wiring;
 
@@ -25,15 +26,14 @@ public class SimpleTest {
 	/**
 	 * Connect singletons: <br>
 	 * A -> B <br>
-	 * A -> C
+	 * A -> C -> D
 	 * 
 	 * @throws Exception
 	 */
 	@Test
 	public void testMostSimple() throws Exception {
 		Wiring injector = Wiring.getContext("main");
-		A a = injector.connect(A.class, B.class)
-			.connect(A.class, C.class)
+		A a = injector.connectAll(A.class)
 			.get(A.class);
 
 		B b = a.b.get();
@@ -59,8 +59,7 @@ public class SimpleTest {
 		A a = Wiring.getContext("main")
 			.defineConstruction(B.class, B::new)
 			.defineConstruction(C.class, () -> new C(1, 2))
-			.connect(A.class, B.class)
-			.connect(A.class, C.class)
+			.connectAll(A.class)
 			.get(A.class);
 
 		B b = a.b.get();
@@ -75,7 +74,8 @@ public class SimpleTest {
 	@Test
 	public void testConnectInterfaces() throws Exception {
 		MyApp app = Wiring.getContext("app")
-			.connect(MyAppImpl.class, MyServiceImpl.class)
+			.defineConstruction(MyService.class, MyServiceImpl::new)
+			.connectAll(MyAppImpl.class)
 			.get(MyAppImpl.class);
 
 		String greets = app.start();
@@ -87,9 +87,10 @@ public class SimpleTest {
 	@Test
 	public void testStartStop() throws Exception {
 		Wiring.getContext("app")
+			.defineConstruction(MyService.class, MyServiceImpl::new)
 			.defineStartStop(MyAppImpl.class, app -> greets = app.start(), app -> app.stop())
 			.defineStartStop(MyServiceImpl.class, svc -> svc.initialize(), svc -> svc.destroy())
-			.connect(MyAppImpl.class, MyServiceImpl.class)
+			.connectAll(MyAppImpl.class)
 			.start()
 			.await();
 
@@ -111,13 +112,5 @@ public class SimpleTest {
 		assertTrue(injector.get(MyServiceImpl.class)
 			.isStopped());
 
-	}
-
-	@Test(expected = IllegalStateException.class)
-	public void testDuplicateConnect() throws Exception {
-		Wiring.getContext("main")
-			.setStrictConnect(false)
-			.connect(A.class, B.class)
-			.connect(A.class, B.class);
 	}
 }
