@@ -1,6 +1,6 @@
 package coded.dependency.injection;
 
-import coded.dependency.ijection.internal._WiringHelper;
+import coded.dependency.injection.internal._WiringHelper;
 
 public class Dependency<T> {
 

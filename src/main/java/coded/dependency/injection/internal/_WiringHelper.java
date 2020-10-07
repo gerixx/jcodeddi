@@ -1,4 +1,4 @@
-package coded.dependency.ijection.internal;
+package coded.dependency.injection.internal;
 
 import java.util.ArrayList;
 import java.util.HashMap;

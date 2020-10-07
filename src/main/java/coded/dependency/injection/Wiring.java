@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import coded.dependency.ijection.internal._WiringHelper;
+import coded.dependency.injection.internal._WiringHelper;
 
 public class Wiring {
 
