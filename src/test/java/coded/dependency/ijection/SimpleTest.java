@@ -111,6 +111,5 @@ public class SimpleTest {
 			.isStopped());
 		assertTrue(injector.get(MyServiceImpl.class)
 			.isStopped());
-
 	}
 }

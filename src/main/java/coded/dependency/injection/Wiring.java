@@ -96,8 +96,13 @@ public class Wiring {
 	 * construction supplier or no-argument constructors are invoked to create
 	 * objects if not created yet. Objects are treated as 'singletons' within the
 	 * Wiring context. Multiple connects of classes are ignored.
+	 * 
+	 * @param <T>
+	 * @param classDependent class to begin with recursive wiring
+	 * @return injector
+	 * @throws Exception
 	 */
-	public <T, U> Wiring connectAll(Class<T> classDependent) throws Exception {
+	public <T extends Dependent> Wiring connectAll(Class<T> classDependent) throws Exception {
 		_WiringHelper.setContext(contextName);
 		try {
 			getOrCreateObject(classDependent, true);
@@ -115,26 +120,54 @@ public class Wiring {
 
 	public Wiring start() {
 		this.state = State.START_IN_PROGRESS;
-		objectConstructionSequenceList.forEach(name -> {
-			Consumer<?> consumer = objectStartMap.get(name);
-			if (consumer != null) {
-				consumer.accept(this.getTypedObject(name));
-			}
+		_WiringHelper helper = _WiringHelper.getContext(contextName);
+		connectAllList.forEach(name -> {
+			Dependent object = (Dependent) objectMap.get(name);
+			startDependencies(helper, name, object);
 		});
 		this.state = State.START_FINISHED;
 		return this;
 	}
 
+	private void startDependencies(_WiringHelper helper, String name, Object object) {
+		if (object instanceof Dependent) {
+			List<Dependency<?>> dependencies = helper.getDependencies((Dependent) object);
+			dependencies.forEach(dep -> {
+				startDependencies(helper, dep.get()
+					.getClass()
+					.getName(), dep);
+			});
+		}
+		Consumer<?> consumer = objectStartMap.get(name);
+		if (consumer != null) {
+			consumer.accept(this.getTypedObject(name));
+		}
+	}
+
 	public Wiring stop() {
 		this.state = State.STOP_IN_PROGRESS;
-		objectConstructionSequenceList.forEach(name -> {
-			Consumer<?> consumer = objectStopMap.get(name);
-			if (consumer != null) {
-				consumer.accept(this.getTypedObject(name));
-			}
+		_WiringHelper helper = _WiringHelper.getContext(contextName);
+		connectAllList.forEach(name -> {
+			Dependent object = (Dependent) objectMap.get(name);
+			stopDependencies(helper, name, object);
 		});
 		this.state = State.STOP_FINISHED;
 		return this;
+	}
+
+	private void stopDependencies(_WiringHelper helper, String name, Object object) {
+		if (object instanceof Dependent) {
+			List<Dependency<?>> dependencies = helper.getDependencies((Dependent) object);
+			dependencies.forEach(dep -> {
+				stopDependencies(helper, dep.get()
+					.getClass()
+					.getName(), dep);
+			});
+		}
+		Consumer<?> consumer = objectStopMap.get(name);
+		if (consumer != null) {
+			consumer.accept(this.getTypedObject(name));
+		}
 	}
 
 	/**
@@ -165,7 +198,6 @@ public class Wiring {
 	private String indent = "";
 	private Set<String> traversedObjects = new HashSet<>();
 
-	// TODO fix printed tree, print recursive
 	public void print(PrintStream out) {
 		_WiringHelper helper = _WiringHelper.getContext(contextName);
 		connectAllList.forEach(name -> {
