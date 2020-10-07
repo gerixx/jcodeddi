@@ -3,8 +3,10 @@ package coded.dependency.injection;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -18,6 +20,7 @@ public class Wiring {
 	private final Map<String, Consumer<?>> objectStopMap = new HashMap<>();
 	private final Map<String, Consumer<?>> objectStartMap = new HashMap<>();
 	private final List<String> objectConstructionSequenceList = new ArrayList<>();
+	private final List<String> connectAllList = new ArrayList<>();
 	private final String contextName;
 	private State state = State.WIRING_IN_PROGRESS;
 
@@ -92,13 +95,13 @@ public class Wiring {
 	 * Creates dependency objects and wires them up recursively. Defined
 	 * construction supplier or no-argument constructors are invoked to create
 	 * objects if not created yet. Objects are treated as 'singletons' within the
-	 * Wiring context. Multiple connects of same classes are ignored per default,
-	 * see also {@link #setStrictConnect(boolean)}.
+	 * Wiring context. Multiple connects of classes are ignored.
 	 */
 	public <T, U> Wiring connectAll(Class<T> classDependent) throws Exception {
 		_WiringHelper.setContext(contextName);
 		try {
 			getOrCreateObject(classDependent, true);
+			connectAllList.add(classDependent.getName());
 		} finally {
 			_WiringHelper.setContext(null);
 		}
@@ -160,34 +163,47 @@ public class Wiring {
 
 	// A -> B
 	private String indent = "";
+	private Set<String> traversedObjects = new HashSet<>();
 
 	// TODO fix printed tree, print recursive
 	public void print(PrintStream out) {
 		_WiringHelper helper = _WiringHelper.getContext(contextName);
-		objectConstructionSequenceList.forEach(name -> {
+		connectAllList.forEach(name -> {
 			Object object = objectMap.get(name);
 			if (object instanceof Dependent) {
-				List<Dependency<?>> dependencies = helper.getDependencies((Dependent) object);
 				String depName = getPrintName(name, object);
 				out.print(indent);
 				out.println(depName);
-				indent += "  ";
-				dependencies.forEach(dep -> {
-					out.print(indent);
-					out.print("-> ");
-					Object target = dep.get();
-					if (target == null) {
-						out.println("UNRESOLVED dependency to: " + dep.getTargetClass()
-							.getName());
-					} else {
-						String targetName = getPrintName(target.getClass()
-							.getName(), target);
-						out.println(targetName);
-					}
-				});
-				indent = indent.substring(0, indent.length() - 2);
+				traversedObjects.add(name);
+				printDependencies(out, helper, (Dependent) object);
 			}
 		});
+	}
+
+	private void printDependencies(PrintStream out, _WiringHelper helper, Dependent object) {
+		List<Dependency<?>> dependencies = helper.getDependencies(object);
+		indent += "  ";
+		dependencies.forEach(dep -> {
+			out.print(indent);
+			out.print("-> ");
+			Object target = dep.get();
+			if (target == null) {
+				out.println("UNRESOLVED dependency to: " + dep.getTargetClass()
+					.getName());
+			} else {
+				String targetName = target.getClass()
+					.getName();
+				String targetNameToPrint = getPrintName(targetName, target);
+				out.println(targetNameToPrint);
+				if (!traversedObjects.contains(targetName)) {
+					traversedObjects.add(targetName);
+					if (Dependent.class.isAssignableFrom(dep.getTargetClass())) {
+						printDependencies(out, helper, (Dependent) dep.get());
+					}
+				}
+			}
+		});
+		indent = indent.substring(0, indent.length() - 2);
 	}
 
 	private String getPrintName(String name, Object object) {
@@ -219,7 +235,7 @@ public class Wiring {
 				if (!newObject.getClass()
 					.getName()
 					.equals(name)) {
-					// name is an interface
+					// name is an interface, map it additionally to the new object
 					String nameImpl = newObject.getClass()
 						.getName();
 					objectMap.put(nameImpl, newObject);
