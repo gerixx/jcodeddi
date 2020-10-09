@@ -1,6 +1,7 @@
 package coded.dependency.ijection;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -103,6 +104,7 @@ public class SimpleTest {
 		assertTrue(injector.get(MyServiceImpl.class)
 			.isInitialized());
 		assertEquals("greets from my service", greets);
+		assertTrue(injector.get(B.class).isStarted);
 
 		// when stop then
 		injector.stop()
@@ -111,5 +113,6 @@ public class SimpleTest {
 			.isStopped());
 		assertTrue(injector.get(MyServiceImpl.class)
 			.isStopped());
+		assertFalse(injector.get(B.class).isStarted);
 	}
 }

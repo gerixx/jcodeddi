@@ -1,6 +1,6 @@
 # Coded Dependency Injection
 
-Use plain Java code for dependency injection. No reflection and no annotation processing needed.
+Use plain Java 8+ code for dependency injection. No reflection, no annotation processing needed and no 3rd party dependencies.
 
 For example A depends on B and C:
 

@@ -1,6 +1,11 @@
 package coded.dependency.ijection.internal.fortest;
 
-public class MyServiceImpl implements MyService {
+import coded.dependency.injection.Dependency;
+import coded.dependency.injection.Dependent;
+
+public class MyServiceImpl implements MyService, Dependent {
+
+	Dependency<B> b = new Dependency<>(this, B.class);
 
 	private boolean initialized;
 	private boolean isStopped;

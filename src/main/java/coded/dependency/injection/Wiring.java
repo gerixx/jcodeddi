@@ -135,12 +135,14 @@ public class Wiring {
 			dependencies.forEach(dep -> {
 				startDependencies(helper, dep.get()
 					.getClass()
-					.getName(), dep);
+					.getName(), dep.get());
 			});
 		}
 		Consumer<?> consumer = objectStartMap.get(name);
 		if (consumer != null) {
 			consumer.accept(this.getTypedObject(name));
+		} else if (objectMap.get(name) instanceof Lifecycle) {
+			((Lifecycle) objectMap.get(name)).start();
 		}
 	}
 
@@ -161,12 +163,14 @@ public class Wiring {
 			dependencies.forEach(dep -> {
 				stopDependencies(helper, dep.get()
 					.getClass()
-					.getName(), dep);
+					.getName(), dep.get());
 			});
 		}
 		Consumer<?> consumer = objectStopMap.get(name);
 		if (consumer != null) {
 			consumer.accept(this.getTypedObject(name));
+		} else if (objectMap.get(name) instanceof Lifecycle) {
+			((Lifecycle) objectMap.get(name)).stop();
 		}
 	}
 
@@ -229,7 +233,8 @@ public class Wiring {
 				out.println(targetNameToPrint);
 				if (!traversedObjects.contains(targetName)) {
 					traversedObjects.add(targetName);
-					if (Dependent.class.isAssignableFrom(dep.getTargetClass())) {
+					if (Dependent.class.isAssignableFrom(dep.get()
+						.getClass())) {
 						printDependencies(out, helper, (Dependent) dep.get());
 					}
 				}
