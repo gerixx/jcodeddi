@@ -22,7 +22,6 @@ public class Wiring {
 	private final List<String> objectConstructionSequenceList = new ArrayList<>();
 	private final List<String> connectAllList = new ArrayList<>();
 	private final String contextName;
-	private State state = State.WIRING_IN_PROGRESS;
 
 	private Wiring(String name) {
 		this.contextName = name;
@@ -119,13 +118,11 @@ public class Wiring {
 	}
 
 	public Wiring start() {
-		this.state = State.START_IN_PROGRESS;
 		_WiringHelper helper = _WiringHelper.getContext(contextName);
 		connectAllList.forEach(name -> {
 			Dependent object = (Dependent) objectMap.get(name);
 			startDependencies(helper, name, object);
 		});
-		this.state = State.START_FINISHED;
 		return this;
 	}
 
@@ -147,13 +144,11 @@ public class Wiring {
 	}
 
 	public Wiring stop() {
-		this.state = State.STOP_IN_PROGRESS;
 		_WiringHelper helper = _WiringHelper.getContext(contextName);
 		connectAllList.forEach(name -> {
 			Dependent object = (Dependent) objectMap.get(name);
 			stopDependencies(helper, name, object);
 		});
-		this.state = State.STOP_FINISHED;
 		return this;
 	}
 
@@ -188,10 +183,6 @@ public class Wiring {
 	private <T> T get(String name) {
 		await();
 		return getTypedObject(name);
-	}
-
-	public State getState() {
-		return state;
 	}
 
 	public void print() {
