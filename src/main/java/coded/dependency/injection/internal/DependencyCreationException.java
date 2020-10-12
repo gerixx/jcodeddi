@@ -1,4 +1,4 @@
-package coded.dependency.injection;
+package coded.dependency.injection.internal;
 
 public class DependencyCreationException extends RuntimeException {
 

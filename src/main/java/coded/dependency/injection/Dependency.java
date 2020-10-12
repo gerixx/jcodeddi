@@ -1,5 +1,6 @@
 package coded.dependency.injection;
 
+import coded.dependency.injection.internal.DependencyCreationException;
 import coded.dependency.injection.internal._WiringHelper;
 
 public class Dependency<T> {
