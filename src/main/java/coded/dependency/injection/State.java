@@ -1,5 +1,0 @@
-package coded.dependency.injection;
-
-public enum State {
-	WIRING_IN_PROGRESS, WIRING_FINISHED, STOP_IN_PROGRESS, STOP_FINISHED, START_IN_PROGRESS, START_FINISHED
-}

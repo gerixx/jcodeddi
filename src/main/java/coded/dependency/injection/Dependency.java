@@ -27,14 +27,30 @@ public class Dependency<T> {
 	 */
 	public Dependency(Dependent d, Class<T> targetClass) {
 		this.targetClass = targetClass;
-		_WiringHelper helperContext = _WiringHelper.getContext();
-		assert helperContext != null;
-		helperContext.newDependency(d, this);
+		_WiringHelper helper = _WiringHelper.getContext();
+		assert helper != null;
+		helper.newDependency(d, this);
 		try {
-			target = helperContext.getObject(targetClass);
+			target = helper.getObject(targetClass);
+			helper.loginfo(Dependency.class, () -> {
+				return "Injecting " + getInjectionInfo(d) + ".";
+			});
 		} catch (Exception e) {
+			helper.logerror(Dependency.class, () -> "Injecting " + getInjectionInfo(d) + " failed", e);
 			throw new DependencyCreationException(e);
 		}
+	}
+
+	private String getInjectionInfo(Dependent d) {
+		return d.getClass()
+			.getSimpleName() + " -> "
+				+ target.getClass()
+					.getSimpleName()
+				+ " ('" + target.getClass()
+					.getName()
+				+ "' into the dependent '" + d.getClass()
+					.getName()
+				+ "')";
 	}
 
 	public T get() {

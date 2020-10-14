@@ -1,6 +1,8 @@
 package coded.dependency.injection;
 
 import java.io.PrintStream;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,6 +12,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import coded.dependency.injection.internal.LogDefaultSystemOut;
 import coded.dependency.injection.internal._WiringHelper;
 
 public class Wiring {
@@ -23,8 +26,27 @@ public class Wiring {
 	private final List<String> connectAllList = new ArrayList<>();
 	private final String contextName;
 
+	private static class StopWatch {
+		private Instant start;
+
+		StopWatch() {
+			start = Instant.now();
+		}
+
+		static StopWatch start() {
+			return new StopWatch();
+		}
+
+		long stop() {
+			return Duration.between(start, Instant.now())
+				.toMillis();
+		}
+	}
+
 	private Wiring(String name) {
 		this.contextName = name;
+		_WiringHelper.getContext(contextName)
+			.setLogger(new LogDefaultSystemOut());
 	}
 
 	/**
@@ -37,6 +59,16 @@ public class Wiring {
 	public static Wiring getContext(String contextName) {
 		wiringContextMap.putIfAbsent(contextName, new Wiring(contextName));
 		return wiringContextMap.get(contextName);
+	}
+
+	/*
+	 * Set your own log target by implementing {@link LogBindingInterface}. Default
+	 * log target is System.out. Set null to disable logs.
+	 */
+	public Wiring setLogger(LogBindingInterface logger) {
+		_WiringHelper.getContext(contextName)
+			.setLogger(logger);
+		return this;
 	}
 
 	public Wiring setMaxWorkerThreads(int t) {
@@ -102,13 +134,16 @@ public class Wiring {
 	 * @throws Exception
 	 */
 	public <T extends Dependent> Wiring connectAll(Class<T> classDependent) throws Exception {
-		_WiringHelper.setContext(contextName);
+		_WiringHelper helper = _WiringHelper.setContext(contextName);
+		helper.loginfo(Wiring.class, () -> "Connect all...");
+		StopWatch start = StopWatch.start();
 		try {
 			getOrCreateObject(classDependent, true);
 			connectAllList.add(classDependent.getName());
 		} finally {
 			_WiringHelper.setContext(null);
 		}
+		helper.loginfo(Wiring.class, () -> "Connect all finished in " + start.stop() + "ms.");
 		return this;
 	}
 
@@ -119,10 +154,13 @@ public class Wiring {
 
 	public Wiring start() {
 		_WiringHelper helper = _WiringHelper.getContext(contextName);
+		helper.loginfo(Wiring.class, () -> "Start lifecycles...");
+		StopWatch start = StopWatch.start();
 		connectAllList.forEach(name -> {
 			Dependent object = (Dependent) objectMap.get(name);
 			startDependencies(helper, name, object);
 		});
+		helper.loginfo(Wiring.class, () -> "Start lifecycles finished in " + start.stop() + "ms.");
 		return this;
 	}
 
@@ -136,19 +174,27 @@ public class Wiring {
 			});
 		}
 		Consumer<?> consumer = objectStartMap.get(name);
+		StopWatch start = StopWatch.start();
 		if (consumer != null) {
 			consumer.accept(this.getTypedObject(name));
+			helper.loginfo(Wiring.class, () -> "Started " + _WiringHelper.getPrintName(this.getTypedObject(name))
+					+ " using Consumer in " + start.stop() + "ms.");
 		} else if (objectMap.get(name) instanceof Lifecycle) {
 			((Lifecycle) objectMap.get(name)).start();
+			helper.loginfo(Wiring.class, () -> "Started " + _WiringHelper.getPrintName(this.getTypedObject(name))
+					+ " using Lifecycle in " + start.stop() + "ms.");
 		}
 	}
 
 	public Wiring stop() {
 		_WiringHelper helper = _WiringHelper.getContext(contextName);
+		helper.loginfo(Wiring.class, () -> "Stop lifecycles...");
+		StopWatch start = StopWatch.start();
 		connectAllList.forEach(name -> {
 			Dependent object = (Dependent) objectMap.get(name);
 			stopDependencies(helper, name, object);
 		});
+		helper.loginfo(Wiring.class, () -> "Stop lifecycles finished in " + start.stop() + "ms.");
 		return this;
 	}
 
@@ -161,11 +207,16 @@ public class Wiring {
 					.getName(), dep.get());
 			});
 		}
+		StopWatch start = StopWatch.start();
 		Consumer<?> consumer = objectStopMap.get(name);
 		if (consumer != null) {
 			consumer.accept(this.getTypedObject(name));
+			helper.loginfo(Wiring.class, () -> "Stopped " + _WiringHelper.getPrintName(this.getTypedObject(name))
+					+ " using Consumer in " + start.stop() + "ms.");
 		} else if (objectMap.get(name) instanceof Lifecycle) {
 			((Lifecycle) objectMap.get(name)).stop();
+			helper.loginfo(Wiring.class, () -> "Stopped " + _WiringHelper.getPrintName(this.getTypedObject(name))
+					+ " using Lifecycle in " + start.stop() + "ms.");
 		}
 	}
 
@@ -198,7 +249,7 @@ public class Wiring {
 		connectAllList.forEach(name -> {
 			Object object = objectMap.get(name);
 			if (object instanceof Dependent) {
-				String depName = getPrintName(name, object);
+				String depName = _WiringHelper.getPrintName(name, object);
 				out.print(indent);
 				out.println(depName);
 				traversedObjects.add(name);
@@ -220,7 +271,7 @@ public class Wiring {
 			} else {
 				String targetName = target.getClass()
 					.getName();
-				String targetNameToPrint = getPrintName(targetName, target);
+				String targetNameToPrint = _WiringHelper.getPrintName(targetName, target);
 				out.println(targetNameToPrint);
 				if (!traversedObjects.contains(targetName)) {
 					traversedObjects.add(targetName);
@@ -234,19 +285,6 @@ public class Wiring {
 		indent = indent.substring(0, indent.length() - 2);
 	}
 
-	private String getPrintName(String name, Object object) {
-		final String printName;
-		String fullClassName = object.getClass()
-			.getName();
-		if (!name.equals(fullClassName)) {
-			printName = name + " (" + fullClassName + ")";
-		} else {
-			printName = object.getClass()
-				.getSimpleName() + " (" + fullClassName + ")";
-		}
-		return printName;
-	}
-
 	@SuppressWarnings("unchecked")
 	private <T> T getTypedObject(String name) {
 		return (T) objectMap.get(name);
@@ -256,10 +294,14 @@ public class Wiring {
 	public Object getOrCreateObject(Class<?> clz, boolean isExplicitWiring) throws Exception {
 		String name = clz.getName();
 		if (!objectMap.containsKey(name)) {
+			_WiringHelper helper = _WiringHelper.getContext(contextName);
+			StopWatch start = StopWatch.start();
 			final Object newObject;
 			if (objectConstructionMap.containsKey(name)) {
 				newObject = objectConstructionMap.get(name)
 					.get();
+				helper.loginfo(Wiring.class, () -> "Created " + _WiringHelper.getPrintName(newObject)
+						+ " using Supplier in " + start.stop() + "ms.");
 				if (!newObject.getClass()
 					.getName()
 					.equals(name)) {
@@ -272,6 +314,8 @@ public class Wiring {
 			} else {
 				newObject = clz.getDeclaredConstructor()
 					.newInstance();
+				helper.loginfo(Wiring.class, () -> "Created " + _WiringHelper.getPrintName(newObject)
+						+ " using default consctructor in " + start.stop() + "ms.");
 			}
 			objectMap.put(name, newObject);
 			objectConstructionSequenceList.add(name);
