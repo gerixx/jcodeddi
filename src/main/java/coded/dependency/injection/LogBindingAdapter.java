@@ -1,11 +1,9 @@
-package coded.dependency.injection.internal;
+package coded.dependency.injection;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
 import java.util.function.Supplier;
-
-import coded.dependency.injection.LogBindingInterface;
 
 public class LogBindingAdapter implements LogBindingInterface {
 
