@@ -77,13 +77,19 @@ public class _WiringHelper {
 	// TODO use suppliers
 	public void loginfo(Class<?> clz, Supplier<String> msg) {
 		if (logger != null) {
-			logger.info(clz, msg);
+			logger.info(clz, contextName, msg);
+		}
+	}
+
+	public void logerror(Class<Wiring> clz, Supplier<String> msg) {
+		if (logger != null) {
+			logger.error(clz, contextName, msg);
 		}
 	}
 
 	public void logerror(Class<?> clz, Supplier<String> msg, Exception e) {
 		if (logger != null) {
-			logger.error(clz, msg, e);
+			logger.error(clz, contextName, msg, e);
 		}
 	}
 

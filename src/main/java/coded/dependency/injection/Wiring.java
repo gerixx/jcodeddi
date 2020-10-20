@@ -1,6 +1,7 @@
 package coded.dependency.injection;
 
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import coded.dependency.injection.internal.LogDefaultSystemOut;
+import coded.dependency.injection.internal.LogBindingAdapter;
 import coded.dependency.injection.internal._WiringHelper;
 
 public class Wiring {
@@ -46,7 +47,7 @@ public class Wiring {
 	private Wiring(String name) {
 		this.contextName = name;
 		_WiringHelper.getContext(contextName)
-			.setLogger(new LogDefaultSystemOut());
+			.setLogger(new LogBindingAdapter(new PrintWriter(System.out, true)));
 	}
 
 	/**
@@ -155,6 +156,9 @@ public class Wiring {
 	public Wiring start() {
 		_WiringHelper helper = _WiringHelper.getContext(contextName);
 		helper.loginfo(Wiring.class, () -> "Start lifecycles...");
+		if (connectAllList.isEmpty()) {
+			helper.logerror(Wiring.class, () -> "No class injection done yet, see .connectAll().");
+		}
 		StopWatch start = StopWatch.start();
 		connectAllList.forEach(name -> {
 			Dependent object = (Dependent) objectMap.get(name);
