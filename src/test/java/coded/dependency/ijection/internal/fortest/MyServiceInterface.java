@@ -1,6 +1,6 @@
 package coded.dependency.ijection.internal.fortest;
 
-public interface MyService {
+public interface MyServiceInterface {
 
 	public void initialize();
 

@@ -11,10 +11,11 @@ import org.junit.Test;
 import coded.dependency.ijection.internal.fortest.A;
 import coded.dependency.ijection.internal.fortest.B;
 import coded.dependency.ijection.internal.fortest.C;
-import coded.dependency.ijection.internal.fortest.MyApp;
 import coded.dependency.ijection.internal.fortest.MyAppImpl;
-import coded.dependency.ijection.internal.fortest.MyService;
+import coded.dependency.ijection.internal.fortest.MyAppInterface;
 import coded.dependency.ijection.internal.fortest.MyServiceImpl;
+import coded.dependency.ijection.internal.fortest.MyServiceInterface;
+import coded.dependency.injection.ConstructionMissingException;
 import coded.dependency.injection.Wiring;
 
 public class SimpleTest {
@@ -74,8 +75,8 @@ public class SimpleTest {
 
 	@Test
 	public void testConnectInterfaces() throws Exception {
-		MyApp app = Wiring.getContext("app")
-			.defineConstruction(MyService.class, MyServiceImpl::new)
+		MyAppInterface app = Wiring.getContext("app")
+			.defineConstruction(MyServiceInterface.class, MyServiceImpl::new)
 			.connectAll(MyAppImpl.class)
 			.get(MyAppImpl.class);
 
@@ -88,12 +89,11 @@ public class SimpleTest {
 	@Test
 	public void testStartStop() throws Exception {
 		Wiring.getContext("app")
-			.defineConstruction(MyService.class, MyServiceImpl::new)
+			.defineConstruction(MyServiceInterface.class, MyServiceImpl::new)
 			.defineStartStop(MyAppImpl.class, app -> greets = app.start(), app -> app.stop())
 			.defineStartStop(MyServiceImpl.class, svc -> svc.initialize(), svc -> svc.destroy())
 			.connectAll(MyAppImpl.class)
-			.start()
-			.await();
+			.start();
 
 		Wiring injector = Wiring.getContext("app");
 		injector.print();
@@ -107,12 +107,18 @@ public class SimpleTest {
 		assertTrue(injector.get(B.class).isStarted);
 
 		// when stop then
-		injector.stop()
-			.await();
+		injector.stop();
 		assertTrue(injector.get(MyAppImpl.class)
 			.isStopped());
 		assertTrue(injector.get(MyServiceImpl.class)
 			.isStopped());
 		assertFalse(injector.get(B.class).isStarted);
+	}
+
+	@Test(expected = ConstructionMissingException.class)
+	public void testMissingInterfaceConstruction() throws Exception {
+		Wiring.getContext("app")
+			.defineConstruction(MyAppImpl.class, MyAppImpl::new)
+			.connectAll(MyAppImpl.class);
 	}
 }

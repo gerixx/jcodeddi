@@ -22,11 +22,11 @@ public class Wiring {
 	private final Map<String, Supplier<?>> objectConstructionMap = new HashMap<>();
 	private final Map<String, Consumer<?>> objectStopMap = new HashMap<>();
 	private final Map<String, Consumer<?>> objectStartMap = new HashMap<>();
-	private final List<String> objectConstructionSequenceList = new ArrayList<>();
+	private final Set<String> objectCreationPending = new HashSet<>();
 	private final List<String> connectAllList = new ArrayList<>();
 	private final String contextName;
 
-	private static class StopWatch {
+	public static class StopWatch {
 		private Instant start;
 
 		StopWatch() {
@@ -135,20 +135,16 @@ public class Wiring {
 	 */
 	public <T extends Dependent> Wiring connectAll(Class<T> classDependent) throws Exception {
 		_WiringHelper helper = _WiringHelper.setContext(contextName);
-		helper.loginfo(Wiring.class, () -> "Connect all...");
+		helper.loginfo(Wiring.class,
+				() -> "Connect all of dependent " + _WiringHelper.getPrintNameOfClass(classDependent) + " ...");
 		StopWatch start = StopWatch.start();
 		try {
-			getOrCreateObject(classDependent, true);
+			getOrCreateObject(classDependent);
 			connectAllList.add(classDependent.getName());
 		} finally {
 			_WiringHelper.setContext(null);
 		}
 		helper.loginfo(Wiring.class, () -> "Connect all finished in " + start.stop() + "ms.");
-		return this;
-	}
-
-	public Wiring await() {
-		// TODO
 		return this;
 	}
 
@@ -235,7 +231,6 @@ public class Wiring {
 	}
 
 	private <T> T get(String name) {
-		await();
 		return getTypedObject(name);
 	}
 
@@ -294,9 +289,10 @@ public class Wiring {
 	}
 
 	// TODO move to helper
-	public Object getOrCreateObject(Class<?> clz, boolean isExplicitWiring) throws Exception {
+	public Object getOrCreateObject(Class<?> clz) throws Exception {
 		String name = clz.getName();
 		if (!objectMap.containsKey(name)) {
+			objectCreationPending.add(name);
 			_WiringHelper helper = _WiringHelper.getContext(contextName);
 			StopWatch start = StopWatch.start();
 			final Object newObject;
@@ -308,23 +304,38 @@ public class Wiring {
 				if (!newObject.getClass()
 					.getName()
 					.equals(name)) {
-					// name is an interface, map it additionally to the new object
 					String nameImpl = newObject.getClass()
 						.getName();
 					objectMap.put(nameImpl, newObject);
-					objectConstructionSequenceList.add(nameImpl);
 				}
 			} else {
+				if (clz.isInterface()) {
+					throw new ConstructionMissingException("Construction needed for interface '" + clz.getName()
+							+ "', use Wiring#defineConstruction(...).");
+				}
 				newObject = clz.getDeclaredConstructor()
 					.newInstance();
 				helper.loginfo(Wiring.class, () -> "Created " + _WiringHelper.getPrintName(newObject)
 						+ " using default consctructor in " + start.stop() + "ms.");
 			}
 			objectMap.put(name, newObject);
-			objectConstructionSequenceList.add(name);
 		}
+		handleRecursiveDependencies(name);
 		return objectMap.get(name);
 
+	}
+
+	private void handleRecursiveDependencies(String name) {
+		objectCreationPending.remove(name);
+	}
+
+	public <T> Object getOrCreateObject(Dependency<T> dependency, Class<?> targetClass) throws Exception {
+		if (objectCreationPending.contains(targetClass.getName())) {
+			// TODO track dependent and log it
+			throw new RecursiveDependencyException(
+					"Recursive dependency to " + _WiringHelper.getPrintNameOfClass(targetClass));
+		}
+		return getOrCreateObject(targetClass);
 	}
 
 	/**

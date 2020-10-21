@@ -49,8 +49,6 @@ Classes are singletons, that means for every class only one instance is created 
 
 It is light weight, fast, debugable and transparent.
 
-Asynchronous instance creation and wiring. (TODO)
-
 Dependency graph is printable.
 
 Individual construction suppliers for instance creation can be defined.
@@ -62,6 +60,8 @@ Individual destruction consumers for instance shutdown and resource releases can
 Multiple independent injector instances (wiring contexts) are possible.
 
 Scalable - Injectors can be created or cloned during runtime.
+
+Recursive dependencies are prohibited.
 
 ## Examples
 

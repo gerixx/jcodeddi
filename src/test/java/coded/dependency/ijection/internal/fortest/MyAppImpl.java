@@ -2,9 +2,9 @@ package coded.dependency.ijection.internal.fortest;
 
 import coded.dependency.injection.Dependency;
 
-public class MyAppImpl implements MyApp {
+public class MyAppImpl implements MyAppInterface {
 
-	private Dependency<MyService> svc = new Dependency<>(this, MyService.class);
+	private Dependency<MyServiceInterface> svc = new Dependency<>(this, MyServiceInterface.class);
 	private boolean isStarted;
 	private boolean isStopped;
 

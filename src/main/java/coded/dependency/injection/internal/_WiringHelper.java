@@ -64,9 +64,9 @@ public class _WiringHelper {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T getObject(Class<? extends T> targetClass) throws Exception {
+	public <T> T getObject(Dependency<T> dependency, Class<T> targetClass) throws Exception {
 		return (T) Wiring.getContext(contextName)
-			.getOrCreateObject(targetClass, true);
+			.getOrCreateObject(dependency, targetClass);
 	}
 
 	public void setLogger(LogBindingInterface logger) {
@@ -94,11 +94,11 @@ public class _WiringHelper {
 	}
 
 	public static String getPrintName(Object object) {
-		return object.getClass()
-			.getSimpleName() + " ("
-				+ object.getClass()
-					.getName()
-				+ ")";
+		return getPrintNameOfClass(object.getClass());
+	}
+
+	public static String getPrintNameOfClass(Class<?> clz) {
+		return clz.getSimpleName() + " (" + clz.getName() + ")";
 	}
 
 	public static String getPrintName(String name, Object object) {

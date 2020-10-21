@@ -3,7 +3,7 @@ package coded.dependency.ijection.internal.fortest;
 import coded.dependency.injection.Dependency;
 import coded.dependency.injection.Dependent;
 
-public class MyServiceImpl implements MyService, Dependent {
+public class MyServiceImpl implements MyServiceInterface, Dependent {
 
 	Dependency<B> b = new Dependency<>(this, B.class);
 

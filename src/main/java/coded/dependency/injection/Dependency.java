@@ -31,10 +31,12 @@ public class Dependency<T> {
 		assert helper != null;
 		helper.newDependency(d, this);
 		try {
-			target = helper.getObject(targetClass);
+			target = helper.getObject(this, targetClass);
 			helper.loginfo(Dependency.class, () -> {
-				return "Injecting " + getInjectionInfo(d) + ".";
+				return "Injected " + getInjectionInfo(d) + ".";
 			});
+		} catch (RecursiveDependencyException | ConstructionMissingException e) {
+			throw e;
 		} catch (Exception e) {
 			helper.logerror(Dependency.class, () -> "Injecting " + getInjectionInfo(d) + " failed", e);
 			throw new DependencyCreationException(e);
@@ -42,12 +44,15 @@ public class Dependency<T> {
 	}
 
 	private String getInjectionInfo(Dependent d) {
+		if (d == null) {
+			return "dependent is NULL";
+		}
+		if (target == null) {
+			return "target is NULL";
+		}
+		Class<? extends Object> targetClass = target.getClass();
 		return d.getClass()
-			.getSimpleName() + " -> "
-				+ target.getClass()
-					.getSimpleName()
-				+ " ('" + target.getClass()
-					.getName()
+			.getSimpleName() + " -> " + targetClass.getSimpleName() + " ('" + targetClass.getName()
 				+ "' into the dependent '" + d.getClass()
 					.getName()
 				+ "')";
@@ -59,5 +64,9 @@ public class Dependency<T> {
 
 	public Class<T> getTargetClass() {
 		return targetClass;
+	}
+
+	public void setTarget(T object) {
+		target = object;
 	}
 }
