@@ -17,6 +17,7 @@ import coded.dependency.ijection.internal.fortest.MyServiceImpl;
 import coded.dependency.ijection.internal.fortest.MyServiceInterface;
 import coded.dependency.injection.ConstructionMissingException;
 import coded.dependency.injection.Wiring;
+import coded.dependency.injection.WiringInterface;
 
 public class SimpleTest {
 
@@ -34,7 +35,7 @@ public class SimpleTest {
 	 */
 	@Test
 	public void testMostSimple() throws Exception {
-		Wiring injector = Wiring.getContext("main");
+		WiringInterface injector = Wiring.getContext("main");
 		A a = injector.connectAll(A.class)
 			.get(A.class);
 
@@ -95,7 +96,7 @@ public class SimpleTest {
 			.connectAll(MyAppImpl.class)
 			.start();
 
-		Wiring injector = Wiring.getContext("app");
+		WiringInterface injector = Wiring.getContext("app");
 		injector.print();
 
 		// then

@@ -65,8 +65,7 @@ public class _WiringHelper {
 
 	@SuppressWarnings("unchecked")
 	public <T> T getObject(Dependency<T> dependency, Class<T> targetClass) throws Exception {
-		return (T) Wiring.getContext(contextName)
-			.getOrCreateObject(dependency, targetClass);
+		return (T) ((Wiring) Wiring.getContext(contextName)).getOrCreateObject(dependency, targetClass);
 	}
 
 	public void setLogger(LogBindingInterface logger) {

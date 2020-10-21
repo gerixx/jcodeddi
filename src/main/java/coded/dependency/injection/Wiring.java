@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 
 import coded.dependency.injection.internal._WiringHelper;
 
-public class Wiring {
+public class Wiring implements WiringInterface {
 
 	private final static Map<String, Wiring> wiringContextMap = new HashMap<>();
 	private final Map<String, Object> objectMap = new HashMap<>();
@@ -56,7 +56,7 @@ public class Wiring {
 	 * 
 	 * @return the injector
 	 */
-	public static Wiring getContext(String contextName) {
+	public static WiringInterface getContext(String contextName) {
 		wiringContextMap.putIfAbsent(contextName, new Wiring(contextName));
 		return wiringContextMap.get(contextName);
 	}
@@ -65,13 +65,10 @@ public class Wiring {
 	 * Set your own log target by implementing {@link LogBindingInterface}. Default
 	 * log target is System.out. Set null to disable logs.
 	 */
+	@Override
 	public Wiring setLogger(LogBindingInterface logger) {
 		_WiringHelper.getContext(contextName)
 			.setLogger(logger);
-		return this;
-	}
-
-	public Wiring setMaxWorkerThreads(int t) {
 		return this;
 	}
 
@@ -82,6 +79,7 @@ public class Wiring {
 	 * @param construction
 	 * @return the injector
 	 */
+	@Override
 	public <T> Wiring defineConstruction(Class<? super T> clz, Supplier<? super T> construction) {
 		return define(clz, construction, null, null);
 	}
@@ -89,6 +87,7 @@ public class Wiring {
 	/**
 	 * Optional
 	 */
+	@Override
 	public <T> Wiring defineStart(Class<? super T> clz, Consumer<? super T> start) {
 		return define(clz, null, start, null);
 	}
@@ -96,6 +95,7 @@ public class Wiring {
 	/**
 	 * Optional
 	 */
+	@Override
 	public <T> Wiring defineStop(Class<? super T> clz, Consumer<? super T> stop) {
 		return define(clz, null, null, stop);
 	}
@@ -103,6 +103,7 @@ public class Wiring {
 	/**
 	 * Optional
 	 */
+	@Override
 	public <T> Wiring defineStartStop(Class<? super T> clz, Consumer<? super T> start, Consumer<? super T> stop) {
 		return define(clz, null, start, stop);
 	}
@@ -124,7 +125,7 @@ public class Wiring {
 
 	/**
 	 * Creates dependency objects and wires them up recursively. Defined
-	 * construction supplier or no-argument constructors are invoked to create
+	 * construction suppliers or no-argument constructors are invoked to create
 	 * objects if not created yet. Objects are treated as 'singletons' within the
 	 * Wiring context. Multiple connects of classes are ignored.
 	 * 
@@ -133,6 +134,7 @@ public class Wiring {
 	 * @return injector
 	 * @throws Exception
 	 */
+	@Override
 	public <T extends Dependent> Wiring connectAll(Class<T> classDependent) throws Exception {
 		_WiringHelper helper = _WiringHelper.setContext(contextName);
 		helper.loginfo(Wiring.class,
@@ -148,6 +150,7 @@ public class Wiring {
 		return this;
 	}
 
+	@Override
 	public Wiring start() {
 		_WiringHelper helper = _WiringHelper.getContext(contextName);
 		helper.loginfo(Wiring.class, () -> "Start lifecycles...");
@@ -185,6 +188,7 @@ public class Wiring {
 		}
 	}
 
+	@Override
 	public Wiring stop() {
 		_WiringHelper helper = _WiringHelper.getContext(contextName);
 		helper.loginfo(Wiring.class, () -> "Stop lifecycles...");
@@ -226,6 +230,7 @@ public class Wiring {
 	 * @param clz class
 	 * @return singleton or null
 	 */
+	@Override
 	public <T> T get(Class<T> clz) {
 		return get(clz.getName());
 	}
@@ -234,6 +239,7 @@ public class Wiring {
 		return getTypedObject(name);
 	}
 
+	@Override
 	public void print() {
 		print(System.out);
 	}
@@ -242,6 +248,7 @@ public class Wiring {
 	private String indent = "";
 	private Set<String> traversedObjects = new HashSet<>();
 
+	@Override
 	public void print(PrintStream out) {
 		_WiringHelper helper = _WiringHelper.getContext(contextName);
 		connectAllList.forEach(name -> {
