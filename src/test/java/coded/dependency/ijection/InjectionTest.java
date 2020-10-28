@@ -19,7 +19,7 @@ import coded.dependency.injection.ConstructionMissingException;
 import coded.dependency.injection.Wiring;
 import coded.dependency.injection.WiringInterface;
 
-public class SimpleTest {
+public class InjectionTest {
 
 	@After
 	public void after() {
@@ -27,7 +27,7 @@ public class SimpleTest {
 	}
 
 	/**
-	 * Connect singletons: <br>
+	 * Connect beans: <br>
 	 * A -> B <br>
 	 * A -> C -> D
 	 * 
@@ -51,7 +51,7 @@ public class SimpleTest {
 	}
 
 	/**
-	 * Connect singleton to instances: <br>
+	 * Connect beans to instances: <br>
 	 * A -> b <br>
 	 * A -> c
 	 * 
