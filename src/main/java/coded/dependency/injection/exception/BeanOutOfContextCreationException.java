@@ -1,4 +1,4 @@
-package coded.dependency.injection;
+package coded.dependency.injection.exception;
 
 public class BeanOutOfContextCreationException extends RuntimeException {
 

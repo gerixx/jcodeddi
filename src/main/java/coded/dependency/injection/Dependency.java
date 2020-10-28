@@ -1,5 +1,8 @@
 package coded.dependency.injection;
 
+import coded.dependency.injection.exception.BeanOutOfContextCreationException;
+import coded.dependency.injection.exception.ConstructionMissingException;
+import coded.dependency.injection.exception.CyclicDependencyException;
 import coded.dependency.injection.internal.DependencyCreationException;
 import coded.dependency.injection.internal._WiringHelper;
 
@@ -32,6 +35,10 @@ public class Dependency<T> {
 		helper.newDependency(d, this);
 		try {
 			target = helper.getObject(this, targetClass);
+			if (target == null) {
+				// internal error
+				throw new IllegalStateException(getInjectionInfo(d));
+			}
 			helper.loginfo(Dependency.class, () -> {
 				return "Injected " + getInjectionInfo(d) + ".";
 			});

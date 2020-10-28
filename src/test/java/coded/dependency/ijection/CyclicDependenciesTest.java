@@ -9,8 +9,8 @@ import coded.dependency.ijection.internal.fortest.MyAppInterface;
 import coded.dependency.ijection.internal.fortest.MyAppToService;
 import coded.dependency.ijection.internal.fortest.MyServiceInterface;
 import coded.dependency.ijection.internal.fortest.MyServiceToApp;
-import coded.dependency.injection.CyclicDependencyException;
 import coded.dependency.injection.Wiring;
+import coded.dependency.injection.exception.CyclicDependencyException;
 
 public class CyclicDependenciesTest {
 

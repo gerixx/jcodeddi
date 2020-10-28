@@ -15,10 +15,10 @@ import coded.dependency.ijection.internal.fortest.MyAppImpl;
 import coded.dependency.ijection.internal.fortest.MyAppInterface;
 import coded.dependency.ijection.internal.fortest.MyServiceImpl;
 import coded.dependency.ijection.internal.fortest.MyServiceInterface;
-import coded.dependency.injection.BeanOutOfContextCreationException;
-import coded.dependency.injection.ConstructionMissingException;
 import coded.dependency.injection.Wiring;
 import coded.dependency.injection.WiringInterface;
+import coded.dependency.injection.exception.BeanOutOfContextCreationException;
+import coded.dependency.injection.exception.ConstructionMissingException;
 
 public class InjectionTest {
 
