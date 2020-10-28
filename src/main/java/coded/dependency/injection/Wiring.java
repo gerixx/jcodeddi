@@ -124,13 +124,14 @@ public class Wiring implements WiringInterface {
 	}
 
 	/**
-	 * Creates dependency objects and wires them up recursively. Defined
-	 * construction suppliers or no-argument constructors are invoked to create
-	 * objects if not created yet. Objects are treated as 'singletons' within the
+	 * Creates bean with its dependency objects and wires them up recursively.
+	 * Defined construction suppliers or no-argument constructors are invoked to
+	 * create beans if not created yet. Beans are treated as 'singletons' within the
 	 * Wiring context. Multiple connects of classes are ignored.
 	 * 
 	 * @param <T>
-	 * @param classDependent class to begin with recursive wiring
+	 * @param classDependent class of bean to begin with recursive construction and
+	 *                       injection
 	 * @return injector
 	 * @throws Exception
 	 */
