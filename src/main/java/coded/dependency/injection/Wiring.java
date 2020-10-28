@@ -143,8 +143,14 @@ public class Wiring implements WiringInterface {
 		try {
 			getOrCreateObject(classDependent);
 			connectAllList.add(classDependent.getName());
+		} catch (Exception e) {
+			if (_WiringHelper.isCauseKnownRuntimeException(e)) {
+				throw (RuntimeException) e.getCause();
+			} else {
+				throw e;
+			}
 		} finally {
-			_WiringHelper.setContext(null);
+			_WiringHelper.resetContext();
 		}
 		helper.loginfo(Wiring.class, () -> "Connect all finished in " + start.stop() + "ms.");
 		return this;
@@ -351,7 +357,7 @@ public class Wiring implements WiringInterface {
 		if (objectCreationPending.contains(targetClass.getName())) {
 			// TODO track dependent and log it
 			throw new CyclicDependencyException(
-					"Recursive dependency to " + _WiringHelper.getPrintNameOfClass(targetClass));
+					"Cyclic dependency to " + _WiringHelper.getPrintNameOfClass(targetClass));
 		}
 		return getOrCreateObject(targetClass);
 	}

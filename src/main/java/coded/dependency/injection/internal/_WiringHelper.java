@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import coded.dependency.injection.BeanOutOfContextCreationException;
+import coded.dependency.injection.ConstructionMissingException;
+import coded.dependency.injection.CyclicDependencyException;
 import coded.dependency.injection.Dependency;
 import coded.dependency.injection.Dependent;
 import coded.dependency.injection.LogBindingInterface;
@@ -43,6 +45,10 @@ public class _WiringHelper {
 		}
 		wiringContextMap.putIfAbsent(contextName, new _WiringHelper(contextName));
 		return wiringContextMap.get(contextName);
+	}
+
+	public static void resetContext() {
+		_WiringHelper.context.set(null);
 	}
 
 	private _WiringHelper(String contextName) {
@@ -121,4 +127,9 @@ public class _WiringHelper {
 		return printName;
 	}
 
+	public static boolean isCauseKnownRuntimeException(Exception e) {
+		Throwable cause = e.getCause();
+		return cause != null && cause instanceof RuntimeException && (cause instanceof BeanOutOfContextCreationException
+				|| cause instanceof CyclicDependencyException || cause instanceof ConstructionMissingException);
+	}
 }

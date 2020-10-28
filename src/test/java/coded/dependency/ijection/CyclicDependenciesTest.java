@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import coded.dependency.ijection.internal.fortest.AtoB;
 import coded.dependency.ijection.internal.fortest.BtoA;
+import coded.dependency.ijection.internal.fortest.MainWithCycle;
 import coded.dependency.ijection.internal.fortest.MyAppInterface;
 import coded.dependency.ijection.internal.fortest.MyAppToService;
 import coded.dependency.ijection.internal.fortest.MyServiceInterface;
@@ -27,5 +28,11 @@ public class CyclicDependenciesTest {
 			.defineConstruction(MyServiceInterface.class, MyServiceToApp::new)
 			.defineConstruction(MyAppInterface.class, MyAppToService::new);
 		injector.connectAll(MyAppInterface.class);
+	}
+
+	@Test(expected = CyclicDependencyException.class)
+	public void testDeepCyclicDependency() throws Exception {
+		Wiring.getContext("app")
+			.connectAll(MainWithCycle.class);
 	}
 }

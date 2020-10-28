@@ -38,6 +38,9 @@ public class Dependency<T> {
 		} catch (BeanOutOfContextCreationException | CyclicDependencyException | ConstructionMissingException e) {
 			throw e;
 		} catch (Exception e) {
+			if (_WiringHelper.isCauseKnownRuntimeException(e)) {
+				throw (RuntimeException) e.getCause();
+			}
 			helper.logerror(Dependency.class, () -> "Injecting " + getInjectionInfo(d) + " failed", e);
 			throw new DependencyCreationException(e);
 		}
