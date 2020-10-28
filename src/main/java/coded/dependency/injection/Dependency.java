@@ -36,13 +36,13 @@ public class Dependency<T> {
 		try {
 			target = helper.getObject(this, targetClass);
 			if (target == null) {
-				// internal error
-				throw new IllegalStateException(getInjectionInfo(d));
+				throw new DependencyCreationException(getInjectionInfo(d));
 			}
 			helper.loginfo(Dependency.class, () -> {
 				return "Injected " + getInjectionInfo(d) + ".";
 			});
-		} catch (BeanOutOfContextCreationException | CyclicDependencyException | ConstructionMissingException e) {
+		} catch (BeanOutOfContextCreationException | CyclicDependencyException | ConstructionMissingException
+				| DependencyCreationException e) {
 			throw e;
 		} catch (Exception e) {
 			if (_WiringHelper.isCauseKnownRuntimeException(e)) {

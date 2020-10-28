@@ -129,7 +129,9 @@ public class _WiringHelper {
 
 	public static boolean isCauseKnownRuntimeException(Exception e) {
 		Throwable cause = e.getCause();
-		return cause != null && cause instanceof RuntimeException && (cause instanceof BeanOutOfContextCreationException
-				|| cause instanceof CyclicDependencyException || cause instanceof ConstructionMissingException);
+		return cause != null && cause instanceof RuntimeException
+				&& (cause instanceof BeanOutOfContextCreationException || cause instanceof CyclicDependencyException
+						|| cause instanceof ConstructionMissingException
+						|| cause instanceof DependencyCreationException);
 	}
 }
