@@ -35,7 +35,7 @@ public class Dependency<T> {
 			helper.loginfo(Dependency.class, () -> {
 				return "Injected " + getInjectionInfo(d) + ".";
 			});
-		} catch (CyclicDependencyException | ConstructionMissingException e) {
+		} catch (BeanOutOfContextCreationException | CyclicDependencyException | ConstructionMissingException e) {
 			throw e;
 		} catch (Exception e) {
 			helper.logerror(Dependency.class, () -> "Injecting " + getInjectionInfo(d) + " failed", e);

@@ -15,6 +15,7 @@ import coded.dependency.ijection.internal.fortest.MyAppImpl;
 import coded.dependency.ijection.internal.fortest.MyAppInterface;
 import coded.dependency.ijection.internal.fortest.MyServiceImpl;
 import coded.dependency.ijection.internal.fortest.MyServiceInterface;
+import coded.dependency.injection.BeanOutOfContextCreationException;
 import coded.dependency.injection.ConstructionMissingException;
 import coded.dependency.injection.Wiring;
 import coded.dependency.injection.WiringInterface;
@@ -121,5 +122,10 @@ public class InjectionTest {
 		Wiring.getContext("app")
 			.defineConstruction(MyAppImpl.class, MyAppImpl::new)
 			.connectAll(MyAppImpl.class);
+	}
+
+	@Test(expected = BeanOutOfContextCreationException.class)
+	public void testBeanOutOfContextCreation() {
+		A a = new A();
 	}
 }

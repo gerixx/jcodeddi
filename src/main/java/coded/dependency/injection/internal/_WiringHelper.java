@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import coded.dependency.injection.BeanOutOfContextCreationException;
 import coded.dependency.injection.Dependency;
 import coded.dependency.injection.Dependent;
 import coded.dependency.injection.LogBindingInterface;
@@ -29,10 +30,17 @@ public class _WiringHelper {
 	}
 
 	public static _WiringHelper getContext() {
-		return getContext(context.get());
+		String contextName = context.get();
+		if (contextName == null) {
+			throw new BeanOutOfContextCreationException();
+		}
+		return getContext(contextName);
 	}
 
 	public static _WiringHelper getContext(String contextName) {
+		if (contextName == null) {
+			throw new IllegalArgumentException("contextName is null, not allowed");
+		}
 		wiringContextMap.putIfAbsent(contextName, new _WiringHelper(contextName));
 		return wiringContextMap.get(contextName);
 	}
