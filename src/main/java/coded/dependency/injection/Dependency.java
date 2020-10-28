@@ -35,7 +35,7 @@ public class Dependency<T> {
 			helper.loginfo(Dependency.class, () -> {
 				return "Injected " + getInjectionInfo(d) + ".";
 			});
-		} catch (RecursiveDependencyException | ConstructionMissingException e) {
+		} catch (CyclicDependencyException | ConstructionMissingException e) {
 			throw e;
 		} catch (Exception e) {
 			helper.logerror(Dependency.class, () -> "Injecting " + getInjectionInfo(d) + " failed", e);

@@ -1,6 +1,7 @@
 # Coded Dependency Injection
 
 Use plain Java 8+ code for dependency injection. No reflection, no annotation processing needed and no 3rd party dependencies.
+Recommended is Java 11+ as lambda performance was fixed.
 
 For example A depends on B and C:
 
@@ -10,10 +11,10 @@ A -> B, C
 
 ```Java
 Wiring.getContext("myapp")
-	.connectAll(A.class)
-	.await();
+	.connectAll(A.class);
 
 class B {
+   B(int arg1, int arg2) {...}
 	void foo() {...}
 }
 class C {
@@ -27,18 +28,22 @@ class A implements Dependent {
 
 ```
 
-A new injector is created with `Wiring.getContext("myapp")`
+An injector named 'myApp' is created with `Wiring.getContext("myapp")`. Multiple injectors can be created.
 
-Proxy based injection: `Dependency<B> b` acts as a proxy and returns with `get()` the service object `B`.
+Proxy based injection: `Dependency<B> b` acts as a proxy and returns with `b.get()` the service bean `B`.
+The `Dependency` constructor needs the service bean as type of `Dependent` and the client class.
 
-Recursive wiring is done with `Wiring#connectAll(clz)` stargint with creation of `clz`. Instance creation and wiring is asynchronous and completed with terminal function `Wiring#await()`. 
+`Wiring#connectAll(clz)` starts top down instantiation of all beans beginning with `clz` and its dependencies.
+The initialization of the `Dependency` members, therefore the injection, happens during bottom up traversal.
 
-Reflection is per default used for instance creation (`Class#newInstance()`).  But, construction code can be defined to avoid reflection completely:
+Bean construction `Supplier`s can be defined to avoid reflection. If not defined default constructors are used for creating beans (`Class#newInstance()`):
 
 ```Java
+int val1=0, val2=0;
+
 Wiring.getContext("myapp")
-	.defineConstruction(A.class, A::new)
-	.defineConstruction(B.class, () -> new B(arg1, arg2))
+	.defineConstruction(A.class, A::new) // only needed if reflection should/can not be used
+	.defineConstruction(B.class, () -> new B(val1, val2))
 	.connectAll(A.class)
 	...
 ```
@@ -61,7 +66,7 @@ Multiple independent injector instances (wiring contexts) are possible.
 
 Scalable - Injectors can be created or cloned during runtime.
 
-Recursive dependencies are prohibited.
+Cyclic dependencies are prohibited.
 
 ## Examples
 
@@ -95,11 +100,10 @@ class MyAppImpl implements MyApp {
 
 MyApp myApp = Wiring.getContext("app")
 	.defineConstruction(MyService.class, MyServiceImpl::new)
-	defineStartStop(MyAppImpl.class, app -> greets = app.start(), app -> app.stop())
+	.defineStartStop(MyAppImpl.class, app -> greets = app.start(), app -> app.stop())
 	.defineStartStop(MyServiceImpl.class, svc -> svc.initialize(), svc -> svc.destroy())
 	.connectAll(MyAppImpl.class)
 	.start()
-	.await()
    .get(MyAppImpl.class);
 
 myApp.start();

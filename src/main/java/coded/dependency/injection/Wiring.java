@@ -150,19 +150,25 @@ public class Wiring implements WiringInterface {
 		return this;
 	}
 
+	/**
+	 * Runs for all beans its start method if it was defined by
+	 * {@link #defineStart(Class, Consumer)} or by the implementation of the
+	 * {@link Lifecycle} interface.
+	 */
 	@Override
 	public Wiring start() {
 		_WiringHelper helper = _WiringHelper.getContext(contextName);
-		helper.loginfo(Wiring.class, () -> "Start lifecycles...");
 		if (connectAllList.isEmpty()) {
 			helper.logerror(Wiring.class, () -> "No class injection done yet, see .connectAll().");
+		} else {
+			helper.loginfo(Wiring.class, () -> "Start lifecycles...");
+			StopWatch start = StopWatch.start();
+			connectAllList.forEach(name -> {
+				Dependent object = (Dependent) objectMap.get(name);
+				startDependencies(helper, name, object);
+			});
+			helper.loginfo(Wiring.class, () -> "Start lifecycles finished in " + start.stop() + "ms.");
 		}
-		StopWatch start = StopWatch.start();
-		connectAllList.forEach(name -> {
-			Dependent object = (Dependent) objectMap.get(name);
-			startDependencies(helper, name, object);
-		});
-		helper.loginfo(Wiring.class, () -> "Start lifecycles finished in " + start.stop() + "ms.");
 		return this;
 	}
 
@@ -188,6 +194,11 @@ public class Wiring implements WiringInterface {
 		}
 	}
 
+	/**
+	 * Runs for all beans its stop method if it was defined by
+	 * {@link #defineStop(Class, Consumer)} or by the implementation of the
+	 * {@link Lifecycle} interface.
+	 */
 	@Override
 	public Wiring stop() {
 		_WiringHelper helper = _WiringHelper.getContext(contextName);
@@ -339,7 +350,7 @@ public class Wiring implements WiringInterface {
 	public <T> Object getOrCreateObject(Dependency<T> dependency, Class<?> targetClass) throws Exception {
 		if (objectCreationPending.contains(targetClass.getName())) {
 			// TODO track dependent and log it
-			throw new RecursiveDependencyException(
+			throw new CyclicDependencyException(
 					"Recursive dependency to " + _WiringHelper.getPrintNameOfClass(targetClass));
 		}
 		return getOrCreateObject(targetClass);
