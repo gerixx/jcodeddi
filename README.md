@@ -2,42 +2,47 @@
 
 Use plain Java 8+ code for dependency injection. No reflection, no annotation processing needed and no 3rd party dependencies.
 
-For example A depends on B and C:
+For example A depends on B and C. `Wiring` is the dependency injector provider, beans are always referenced by their class:
 
 ```
 A -> B, C
 ```
 
 ```Java
-Wiring.getContext("myapp")
-	.connectAll(A.class); // creates the beans and injects them accordingly
-
 class B {
-   B(int arg1, int arg2) {...}
+	B(int arg1, int arg2) {...}
 	void foo() {...}
 }
-
 class C {
 }
-
 class A implements Dependent {
 	Dependency<B> b = new Dependency<>(this, B.class);
 	Dependency<C> c = new Dependency<>(this, C.class);
 	...
-	b.get().foo(); // b is a proxy to the service object
+	b.get().foo(); // b is a proxy to the service object of type B
 }
+
+Wiring.getContext("myapp")	// creates a named dependency injector
+	.connectAll(A.class); 	// creates the beans and injects them accordingly
 
 ```
 
-A dependency injector named 'myApp' is created with `Wiring.getContext("myApp")`. Multiple injectors can be created.
+## Proxy Based Injection
 
-Proxy based injection: `Dependency<B> b` acts as a proxy and returns with `b.get()` the service bean `B`.
-The `Dependency` constructor requires the client bean as type of the marker interface `Dependent` and the service class.
+A dependency injector named 'myapp' is created with `Wiring.getContext("myApp")`.
+The 'magic' happens when a bean like `A` is instantiated by the injector, then also its `Dependency` objects are instantiated.
+Every `Dependency` object instantiates the referenced service bean and stores it, this results in a cascading creation of the complete dependency tree with root bean `A`. 
 
-`Wiring#connectAll(clz)` starts top down instantiation of all beans beginning with `clz` and its dependencies.
-The initialization of the `Dependency` members, therefore the injection, happens during bottom up traversal.
+`Dependency<B> b` acts as a proxy and returns with `b.get()` the service bean `B`.
+The `Dependency` constructor requires as first argument the client bean as type of the interface `Dependent`, 
+and second the service class.
 
-Optional bean construction `Supplier`s can be defined to avoid reflection. If not defined default constructors are used for creating beans (`Class#newInstance()`), for example:
+`Wiring#connectAll(clz)` creates the dependency tree and starts top down instantiation of all beans beginning with `clz`.
+
+When using the `Wiring` API every bean is referenced by its class. For example to retrieve bean `A` use 
+`Wiring.getContext("myapp").get(A.class);`.
+
+Optional bean construction `Supplier`s can be defined to avoid reflection. If not defined, default constructors are used for creating beans (`Class#newInstance()`), for example:
 
 ```Java
 int val1=0, val2=0;
@@ -49,7 +54,8 @@ Wiring.getContext("myapp")
 	...
 ```
 
-Classes are treated as singletons within the scope of a named dependency injector, that means for every class only one instance is created within a `Wiring` context.
+Classes are treated as singletons within the scope of a named dependency injector, 
+that means for every class only one instance is created within a `Wiring` context.
 
 ## Features
 
@@ -59,9 +65,9 @@ Dependency graph is printable.
 
 Individual construction suppliers for instance creation can be defined.
 
-Individual start up consumers for starting the system can be defined.
+Individual consumers for starting beans can be defined.
 
-Individual destruction consumers for instance shutdown and resource releases can be defined.
+Individual consumers for stopping beans can be defined.
 
 Multiple independent injector instances (wiring contexts) are possible.
 
