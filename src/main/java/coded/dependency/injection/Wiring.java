@@ -60,7 +60,9 @@ public class Wiring implements WiringInterface {
 	 * @return the injector
 	 */
 	public static WiringInterface getContext(String contextName) {
-		wiringContextMap.putIfAbsent(contextName, new Wiring(contextName));
+		if (!wiringContextMap.containsKey(contextName)) {
+			wiringContextMap.put(contextName, new Wiring(contextName));
+		}
 		return wiringContextMap.get(contextName);
 	}
 
@@ -245,11 +247,12 @@ public class Wiring implements WiringInterface {
 	}
 
 	/**
-	 * Returns singleton instance of given class or null if not existing.
+	 * Retrieves bean by given class of the current context or null if it was not
+	 * found.
 	 * 
 	 * @param <T> dedicated type
 	 * @param clz class
-	 * @return singleton or null
+	 * @return bean or null
 	 */
 	@Override
 	public <T> T get(Class<T> clz) {
