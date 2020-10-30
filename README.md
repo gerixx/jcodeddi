@@ -79,9 +79,6 @@ Supports only field injection.
 
 # Examples
 
-https://springframework.guru/dependency-injection-example-using-spring/
-https://www.vogella.com/tutorials/SpringDependencyInjection/article.html
-
 ## Lifecycle of Beans
 
 MyApp > MyService
@@ -173,4 +170,8 @@ assertFalse(injector.get(MyService.class)
 	.isRunning());
 ```
 
+## springframework.guru Example
+
+See `coded.dependency.ijection.example.springfw.guru.DiExampleApplication`, ported from 
+[springframework.guru/](https://springframework.guru/dependency-injection-example-using-spring/).
 https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet
