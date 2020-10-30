@@ -43,7 +43,9 @@ public class _WiringHelper {
 		if (contextName == null) {
 			throw new IllegalArgumentException("contextName is null, not allowed");
 		}
-		wiringContextMap.putIfAbsent(contextName, new _WiringHelper(contextName));
+		if (!wiringContextMap.containsKey(contextName)) {
+			wiringContextMap.put(contextName, new _WiringHelper(contextName));
+		}
 		return wiringContextMap.get(contextName);
 	}
 
@@ -63,7 +65,9 @@ public class _WiringHelper {
 	 *            if A depends on B
 	 */
 	public void newDependency(Dependent d, Dependency<?> dep) {
-		dependencies.putIfAbsent(d, new ArrayList<Dependency<?>>());
+		if (!dependencies.containsKey(d)) {
+			dependencies.put(d, new ArrayList<Dependency<?>>());
+		}
 		dependencies.get(d)
 			.add(dep);
 	}
