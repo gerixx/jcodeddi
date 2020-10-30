@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import coded.dependency.injection.exception.ConnectAllException;
 import coded.dependency.injection.exception.ConstructionMissingException;
 import coded.dependency.injection.exception.CyclicDependencyException;
 import coded.dependency.injection.internal._WiringHelper;
@@ -138,7 +139,7 @@ public class Wiring implements WiringInterface {
 	 * @throws Exception
 	 */
 	@Override
-	public <T extends Dependent> Wiring connectAll(Class<T> classDependent) throws Exception {
+	public <T extends Dependent> Wiring connectAll(Class<T> classDependent) {
 		_WiringHelper helper = _WiringHelper.setContext(contextName);
 		helper.loginfo(Wiring.class,
 				() -> "Connect all of dependent " + _WiringHelper.getPrintNameOfClass(classDependent) + " ...");
@@ -150,7 +151,7 @@ public class Wiring implements WiringInterface {
 			if (_WiringHelper.isCauseKnownRuntimeException(e)) {
 				throw (RuntimeException) e.getCause();
 			} else {
-				throw e;
+				throw new ConnectAllException(e);
 			}
 		} finally {
 			_WiringHelper.resetContext();

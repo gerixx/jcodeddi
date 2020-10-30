@@ -43,7 +43,7 @@ public interface WiringInterface {
 	 * @return injector
 	 * @throws Exception
 	 */
-	<T extends Dependent> Wiring connectAll(Class<T> classDependent) throws Exception;
+	<T extends Dependent> Wiring connectAll(Class<T> classDependent);
 
 	Wiring start();
 

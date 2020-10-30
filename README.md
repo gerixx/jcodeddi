@@ -77,12 +77,12 @@ Cyclic dependencies are prohibited.
 
 Supports only field injection.
 
-## Examples
+# Examples
 
 https://springframework.guru/dependency-injection-example-using-spring/
 https://www.vogella.com/tutorials/SpringDependencyInjection/article.html
 
-### Lifecycle of Beans
+## Lifecycle of Beans
 
 MyApp > MyService
 
