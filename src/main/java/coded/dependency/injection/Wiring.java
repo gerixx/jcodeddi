@@ -170,13 +170,13 @@ public class Wiring implements WiringInterface {
 		if (connectAllList.isEmpty()) {
 			helper.logerror(Wiring.class, () -> "No class injection done yet, see .connectAll().");
 		} else {
-			helper.loginfo(Wiring.class, () -> "Start lifecycles...");
+			helper.loginfo(Wiring.class, () -> "Start beans...");
 			StopWatch start = StopWatch.start();
 			connectAllList.forEach(name -> {
 				Dependent object = (Dependent) objectMap.get(name);
 				startDependencies(helper, name, object);
 			});
-			helper.loginfo(Wiring.class, () -> "Start lifecycles finished in " + start.stop() + "ms.");
+			helper.loginfo(Wiring.class, () -> "Start beans finished in " + start.stop() + "ms.");
 		}
 		return this;
 	}
@@ -211,13 +211,13 @@ public class Wiring implements WiringInterface {
 	@Override
 	public Wiring stop() {
 		_WiringHelper helper = _WiringHelper.getContext(contextName);
-		helper.loginfo(Wiring.class, () -> "Stop lifecycles...");
+		helper.loginfo(Wiring.class, () -> "Stop beans...");
 		StopWatch start = StopWatch.start();
 		connectAllList.forEach(name -> {
 			Dependent object = (Dependent) objectMap.get(name);
 			stopDependencies(helper, name, object);
 		});
-		helper.loginfo(Wiring.class, () -> "Stop lifecycles finished in " + start.stop() + "ms.");
+		helper.loginfo(Wiring.class, () -> "Stop beans finished in " + start.stop() + "ms.");
 		return this;
 	}
 
