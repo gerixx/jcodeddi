@@ -126,6 +126,6 @@ public class InjectionTest {
 
 	@Test(expected = BeanOutOfContextCreationException.class)
 	public void testBeanOutOfContextCreation() {
-		A a = new A();
+		new A();
 	}
 }
