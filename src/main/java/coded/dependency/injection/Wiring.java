@@ -13,9 +13,11 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import coded.dependency.injection.exception.BeanOutOfContextCreationException;
 import coded.dependency.injection.exception.ConnectAllException;
 import coded.dependency.injection.exception.ConstructionMissingException;
 import coded.dependency.injection.exception.CyclicDependencyException;
+import coded.dependency.injection.internal.DependencyCreationException;
 import coded.dependency.injection.internal._WiringHelper;
 
 public class Wiring implements WiringInterface {
@@ -149,6 +151,9 @@ public class Wiring implements WiringInterface {
 		try {
 			getOrCreateObject(classDependent);
 			connectAllList.add(classDependent.getName());
+		} catch (BeanOutOfContextCreationException | CyclicDependencyException | ConstructionMissingException
+				| DependencyCreationException e) {
+			throw e;
 		} catch (Exception e) {
 			if (_WiringHelper.isCauseKnownRuntimeException(e)) {
 				throw (RuntimeException) e.getCause();
