@@ -73,6 +73,8 @@ Multiple independent injector instances (wiring contexts) are possible.
 
 Cyclic dependencies are prohibited.
 
+No casts needed when using beans.
+
 ## Limitations
 
 Supports only field injection.

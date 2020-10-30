@@ -1,0 +1,1 @@
+Compare with Spring example from [vogella.com](https://www.vogella.com/tutorials/SpringDependencyInjection/article.html)
