@@ -5,12 +5,16 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.junit.After;
 import org.junit.Test;
 
 import coded.dependency.ijection.internal.fortest.A;
 import coded.dependency.ijection.internal.fortest.B;
 import coded.dependency.ijection.internal.fortest.C;
+import coded.dependency.ijection.internal.fortest.D;
 import coded.dependency.ijection.internal.fortest.MyAppImpl;
 import coded.dependency.ijection.internal.fortest.MyAppInterface;
 import coded.dependency.ijection.internal.fortest.MyServiceImpl;
@@ -19,6 +23,7 @@ import coded.dependency.injection.Wiring;
 import coded.dependency.injection.WiringInterface;
 import coded.dependency.injection.exception.BeanOutOfContextCreationException;
 import coded.dependency.injection.exception.ConstructionMissingException;
+import coded.dependency.injection.internal.DependencyCreationException;
 
 public class InjectionTest {
 
@@ -127,5 +132,23 @@ public class InjectionTest {
 	@Test(expected = BeanOutOfContextCreationException.class)
 	public void testBeanOutOfContextCreation() {
 		new A();
+	}
+
+	@Test(expected = DependencyCreationException.class)
+	public void testInvalidCreationThreadContext() {
+		Wiring.getContext("app")
+			.defineConstruction(D.class, this::createD_inNewThread)
+			.connectAll(A.class);
+	}
+
+	private ExecutorService exec = Executors.newSingleThreadExecutor();
+
+	private D createD_inNewThread() {
+		try {
+			return exec.submit(D::new)
+				.get();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

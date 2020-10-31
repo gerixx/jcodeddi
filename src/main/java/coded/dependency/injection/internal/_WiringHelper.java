@@ -64,7 +64,7 @@ public class _WiringHelper {
 	 * @param dep the dependency proxy object providing the needed object, e.g., B
 	 *            if A depends on B
 	 */
-	public void newDependency(Dependent d, Dependency<?> dep) {
+	public void addNewDependency(Dependent d, Dependency<?> dep) {
 		if (!dependencies.containsKey(d)) {
 			dependencies.put(d, new ArrayList<Dependency<?>>());
 		}
@@ -88,7 +88,6 @@ public class _WiringHelper {
 
 	public void setLogger(LogBindingInterface logger) {
 		this.logger = logger;
-
 	}
 
 	// TODO use suppliers

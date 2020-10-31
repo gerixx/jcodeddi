@@ -21,7 +21,7 @@ public class Dependency<T> {
 	 * class A implements Dependent {
 	 *   Dependency&lt;B&gt; b = new Dependency<>(this, B.class);
 	 *   ...
-	 *   B bImpl = b.get();
+	 *   B bImpl = b.get(); // inlining b would be possible
 	 * }
 	 * </pre>
 	 * 
@@ -30,10 +30,11 @@ public class Dependency<T> {
 	 */
 	public Dependency(Dependent d, Class<T> targetClass) {
 		this.targetClass = targetClass;
-		_WiringHelper helper = _WiringHelper.getContext();
-		assert helper != null;
-		helper.newDependency(d, this);
+		_WiringHelper helper = null;
 		try {
+			helper = _WiringHelper.getContext();
+			assert helper != null;
+			helper.addNewDependency(d, this);
 			target = helper.getObject(this, targetClass);
 			if (target == null) {
 				throw new DependencyCreationException(getInjectionInfo(d));
@@ -41,24 +42,29 @@ public class Dependency<T> {
 			helper.loginfo(Dependency.class, () -> {
 				return "Injected " + getInjectionInfo(d) + ".";
 			});
-		} catch (BeanOutOfContextCreationException | CyclicDependencyException | ConstructionMissingException
-				| DependencyCreationException e) {
+		} catch (BeanOutOfContextCreationException e) {
+			throw new BeanOutOfContextCreationException("injection error: " + getInjectionInfo(d)
+					+ " - two possible reasons: (1) the bean is not created by the injector or "
+					+ "(2) the bean is not created in the injector thread.");
+		} catch (CyclicDependencyException | ConstructionMissingException | DependencyCreationException e) {
 			throw e;
 		} catch (Exception e) {
 			if (_WiringHelper.isCauseKnownRuntimeException(e)) {
 				throw (RuntimeException) e.getCause();
 			}
-			helper.logerror(Dependency.class, () -> "Injecting " + getInjectionInfo(d) + " failed", e);
-			throw new DependencyCreationException(e);
+			if (helper != null) {
+				helper.logerror(Dependency.class, () -> "Injecting " + getInjectionInfo(d) + " failed", e);
+			}
+			throw new DependencyCreationException(getInjectionInfo(d), e);
 		}
 	}
 
 	private String getInjectionInfo(Dependent d) {
 		if (d == null) {
-			return "dependent is NULL";
+			return "dependent NULL";
 		}
 		if (target == null) {
-			return "target is NULL";
+			return "target NULL";
 		}
 		Class<? extends Object> targetClass = target.getClass();
 		return d.getClass()

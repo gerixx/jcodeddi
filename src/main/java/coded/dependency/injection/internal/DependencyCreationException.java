@@ -8,12 +8,12 @@ public class DependencyCreationException extends RuntimeException {
 
 	private static final long serialVersionUID = -1917387133638187941L;
 
-	public DependencyCreationException(Exception e) {
-		super(e);
-	}
-
 	public DependencyCreationException(String msg) {
 		super(msg);
+	}
+
+	public DependencyCreationException(String msg, Exception e) {
+		super(msg, e);
 	}
 
 }
