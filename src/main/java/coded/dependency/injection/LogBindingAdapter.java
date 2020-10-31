@@ -14,24 +14,24 @@ public class LogBindingAdapter implements LogBindingInterface {
 	}
 
 	@Override
-	public void error(Class<?> clz, String contextName, Supplier<String> msg) {
-		out.printf("%s [ERROR] injector '%s' %s - thread: %s - %s%n", new Date(), contextName, msg.get(),
+	public void error(Class<?> clz, String contextName, Supplier<String> msgSupplier) {
+		out.printf("%s [ERROR] injector '%s' %s - thread: %s - %s%n", new Date(), contextName, msgSupplier.get(),
 				Thread.currentThread()
 					.getName(),
 				clz.getName());
 	}
 
 	@Override
-	public void error(Class<?> clz, String contextName, Supplier<String> msg, Throwable t) {
-		out.printf("%s [ERROR] injector '%s' %s - thread: %s - %s%n%s%n", new Date(), contextName, msg.get(),
+	public void error(Class<?> clz, String contextName, Supplier<String> msgSupplier, Throwable t) {
+		out.printf("%s [ERROR] injector '%s' %s - thread: %s - %s%n%s%n", new Date(), contextName, msgSupplier.get(),
 				Thread.currentThread()
 					.getName(),
 				clz.getName(), throwableToString(t));
 	}
 
 	@Override
-	public void info(Class<?> clz, String contextName, Supplier<String> msg) {
-		out.printf("%s [INFO] injector '%s' %s - thread: %s - %s%n", new Date(), contextName, msg.get(),
+	public void info(Class<?> clz, String contextName, Supplier<String> msgSupplier) {
+		out.printf("%s [INFO] injector '%s' %s - thread: %s - %s%n", new Date(), contextName, msgSupplier.get(),
 				Thread.currentThread()
 					.getName(),
 				clz.getName());
