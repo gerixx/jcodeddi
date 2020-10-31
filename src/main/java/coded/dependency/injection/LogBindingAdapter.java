@@ -14,27 +14,28 @@ public class LogBindingAdapter implements LogBindingInterface {
 	}
 
 	@Override
-	public void error(Class<?> clz, String contextName, Supplier<String> msgSupplier) {
-		out.printf("%s [ERROR] injector '%s' %s - thread: %s - %s%n", new Date(), contextName, msgSupplier.get(),
-				Thread.currentThread()
+	public void error(Class<?> clz, String contextName, String fileName, int lineNumber, Supplier<String> msgSupplier) {
+		out.printf("%s [ERROR] injector '%s' %s - thread: %s - %s (%s:%d)%n", new Date(), contextName,
+				msgSupplier.get(), Thread.currentThread()
 					.getName(),
-				clz.getName());
+				clz.getName(), fileName, lineNumber);
 	}
 
 	@Override
-	public void error(Class<?> clz, String contextName, Supplier<String> msgSupplier, Throwable t) {
-		out.printf("%s [ERROR] injector '%s' %s - thread: %s - %s%n%s%n", new Date(), contextName, msgSupplier.get(),
-				Thread.currentThread()
+	public void error(Class<?> clz, String contextName, String fileName, int lineNumber, Supplier<String> msgSupplier,
+			Throwable t) {
+		out.printf("%s [ERROR] injector '%s' %s - thread: %s - %s (%s:%d)%n%s%n", new Date(), contextName,
+				msgSupplier.get(), Thread.currentThread()
 					.getName(),
-				clz.getName(), throwableToString(t));
+				clz.getName(), fileName, lineNumber, throwableToString(t));
 	}
 
 	@Override
-	public void info(Class<?> clz, String contextName, Supplier<String> msgSupplier) {
-		out.printf("%s [INFO] injector '%s' %s - thread: %s - %s%n", new Date(), contextName, msgSupplier.get(),
+	public void info(Class<?> clz, String contextName, String fileName, int lineNumber, Supplier<String> msgSupplier) {
+		out.printf("%s [INFO] injector '%s' %s - thread: %s - %s (%s:%d)%n", new Date(), contextName, msgSupplier.get(),
 				Thread.currentThread()
 					.getName(),
-				clz.getName());
+				clz.getName(), fileName, lineNumber);
 	}
 
 	private String throwableToString(Throwable t) {
