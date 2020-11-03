@@ -3,7 +3,7 @@ package coded.dependency.injection;
 import coded.dependency.injection.exception.BeanOutOfContextCreationException;
 import coded.dependency.injection.exception.ConstructionMissingException;
 import coded.dependency.injection.exception.CyclicDependencyException;
-import coded.dependency.injection.internal.DependencyCreationException;
+import coded.dependency.injection.exception.DependencyCreationException;
 import coded.dependency.injection.internal._WiringHelper;
 
 public class Dependency<T> {

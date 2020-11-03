@@ -1,8 +1,11 @@
-package coded.dependency.injection;
+package coded.dependency.injection.internal;
 
 import java.io.PrintStream;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import coded.dependency.injection.Dependent;
+import coded.dependency.injection.LogBindingInterface;
 
 public interface _WiringInterface {
 

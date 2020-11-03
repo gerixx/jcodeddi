@@ -22,7 +22,7 @@ import coded.dependency.ijection.internal.fortest.MyServiceInterface;
 import coded.dependency.injection.Wiring;
 import coded.dependency.injection.exception.BeanOutOfContextCreationException;
 import coded.dependency.injection.exception.ConstructionMissingException;
-import coded.dependency.injection.internal.DependencyCreationException;
+import coded.dependency.injection.exception.DependencyCreationException;
 
 public class InjectionTest {
 

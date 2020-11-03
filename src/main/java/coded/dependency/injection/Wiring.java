@@ -4,6 +4,9 @@ import java.io.PrintStream;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import coded.dependency.injection.internal._WiringDoer;
+import coded.dependency.injection.internal._WiringInterface;
+
 public class Wiring implements _WiringInterface {
 
 	private _WiringInterface delegate;

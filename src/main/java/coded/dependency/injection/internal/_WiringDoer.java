@@ -1,4 +1,4 @@
-package coded.dependency.injection;
+package coded.dependency.injection.internal;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -13,12 +13,16 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import coded.dependency.injection.Dependency;
+import coded.dependency.injection.Dependent;
+import coded.dependency.injection.Lifecycle;
+import coded.dependency.injection.LogBindingAdapter;
+import coded.dependency.injection.LogBindingInterface;
 import coded.dependency.injection.exception.BeanOutOfContextCreationException;
 import coded.dependency.injection.exception.ConnectAllException;
 import coded.dependency.injection.exception.ConstructionMissingException;
 import coded.dependency.injection.exception.CyclicDependencyException;
-import coded.dependency.injection.internal.DependencyCreationException;
-import coded.dependency.injection.internal._WiringHelper;
+import coded.dependency.injection.exception.DependencyCreationException;
 
 public class _WiringDoer implements _WiringInterface {
 

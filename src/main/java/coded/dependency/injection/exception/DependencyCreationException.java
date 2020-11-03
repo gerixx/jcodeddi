@@ -1,4 +1,4 @@
-package coded.dependency.injection.internal;
+package coded.dependency.injection.exception;
 
 /**
  * Unexpected exception, indicates an internal issue.
