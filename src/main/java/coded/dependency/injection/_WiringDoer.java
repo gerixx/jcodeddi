@@ -20,7 +20,7 @@ import coded.dependency.injection.exception.CyclicDependencyException;
 import coded.dependency.injection.internal.DependencyCreationException;
 import coded.dependency.injection.internal._WiringHelper;
 
-public class _WiringDoer implements WiringInterface {
+public class _WiringDoer implements _WiringInterface {
 
 	private final static Map<String, _WiringDoer> wiringContextMap = new HashMap<>();
 	private final Map<String, Object> objectMap = new HashMap<>();
@@ -61,7 +61,7 @@ public class _WiringDoer implements WiringInterface {
 	 * 
 	 * @return the injector
 	 */
-	public static WiringInterface getContext(String contextName) {
+	public static _WiringInterface getContext(String contextName) {
 		if (!wiringContextMap.containsKey(contextName)) {
 			wiringContextMap.put(contextName, new _WiringDoer(contextName));
 		}
@@ -73,7 +73,7 @@ public class _WiringDoer implements WiringInterface {
 	 * log target is System.out. Set null to disable logs.
 	 */
 	@Override
-	public WiringInterface setLogger(LogBindingInterface logger) {
+	public _WiringInterface setLogger(LogBindingInterface logger) {
 		_WiringHelper.getContext(contextName)
 			.setLogger(logger);
 		return this;
@@ -87,7 +87,7 @@ public class _WiringDoer implements WiringInterface {
 	 * @return the injector
 	 */
 	@Override
-	public <T> WiringInterface defineConstruction(Class<? super T> clz, Supplier<? super T> construction) {
+	public <T> _WiringInterface defineConstruction(Class<? super T> clz, Supplier<? super T> construction) {
 		return define(clz, construction, null, null);
 	}
 
@@ -95,7 +95,7 @@ public class _WiringDoer implements WiringInterface {
 	 * Optional
 	 */
 	@Override
-	public <T> WiringInterface defineStart(Class<? super T> clz, Consumer<? super T> start) {
+	public <T> _WiringInterface defineStart(Class<? super T> clz, Consumer<? super T> start) {
 		return define(clz, null, start, null);
 	}
 
@@ -103,7 +103,7 @@ public class _WiringDoer implements WiringInterface {
 	 * Optional
 	 */
 	@Override
-	public <T> WiringInterface defineStop(Class<? super T> clz, Consumer<? super T> stop) {
+	public <T> _WiringInterface defineStop(Class<? super T> clz, Consumer<? super T> stop) {
 		return define(clz, null, null, stop);
 	}
 
@@ -111,7 +111,7 @@ public class _WiringDoer implements WiringInterface {
 	 * Optional
 	 */
 	@Override
-	public <T> WiringInterface defineStartStop(Class<? super T> clz, Consumer<? super T> start,
+	public <T> _WiringInterface defineStartStop(Class<? super T> clz, Consumer<? super T> start,
 			Consumer<? super T> stop) {
 		return define(clz, null, start, stop);
 	}
@@ -144,7 +144,7 @@ public class _WiringDoer implements WiringInterface {
 	 * @throws Exception
 	 */
 	@Override
-	public <T extends Dependent> WiringInterface connectAll(Class<T> classDependent) {
+	public <T extends Dependent> _WiringInterface connectAll(Class<T> classDependent) {
 		_WiringHelper helper = _WiringHelper.setContext(contextName);
 		helper.loginfo(_WiringDoer.class,
 				() -> "Connect all of dependent " + _WiringHelper.getPrintNameOfClass(classDependent) + " ...");
@@ -174,7 +174,7 @@ public class _WiringDoer implements WiringInterface {
 	 * {@link Lifecycle} interface.
 	 */
 	@Override
-	public WiringInterface start() {
+	public _WiringInterface start() {
 		_WiringHelper helper = _WiringHelper.getContext(contextName);
 		if (connectAllList.isEmpty()) {
 			helper.logerror(_WiringDoer.class, () -> "No class injection done yet, see .connectAll().");
@@ -218,7 +218,7 @@ public class _WiringDoer implements WiringInterface {
 	 * {@link Lifecycle} interface.
 	 */
 	@Override
-	public WiringInterface stop() {
+	public _WiringInterface stop() {
 		_WiringHelper helper = _WiringHelper.getContext(contextName);
 		helper.loginfo(_WiringDoer.class, () -> "Stop beans...");
 		StopWatch start = StopWatch.start();

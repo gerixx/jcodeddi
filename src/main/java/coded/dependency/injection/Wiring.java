@@ -4,11 +4,11 @@ import java.io.PrintStream;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class Wiring implements WiringInterface {
+public class Wiring implements _WiringInterface {
 
-	private WiringInterface delegate;
+	private _WiringInterface delegate;
 
-	private Wiring(WiringInterface delegate) {
+	private Wiring(_WiringInterface delegate) {
 		this.delegate = delegate;
 	}
 
