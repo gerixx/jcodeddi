@@ -72,10 +72,6 @@ public class _WiringDoer implements _WiringInterface {
 		return wiringContextMap.get(contextName);
 	}
 
-	/*
-	 * Set your own log target by implementing {@link LogBindingInterface}. Default
-	 * log target is System.out. Set null to disable logs.
-	 */
 	@Override
 	public _WiringInterface setLogger(LogBindingInterface logger) {
 		_WiringHelper.getContext(contextName)
@@ -83,37 +79,21 @@ public class _WiringDoer implements _WiringInterface {
 		return this;
 	}
 
-	/**
-	 * Optional, otherwise default constructor is used.
-	 * 
-	 * @param clz
-	 * @param construction
-	 * @return the injector
-	 */
 	@Override
 	public <T> _WiringInterface defineConstruction(Class<? super T> clz, Supplier<? super T> construction) {
 		return define(clz, construction, null, null);
 	}
 
-	/**
-	 * Optional
-	 */
 	@Override
 	public <T> _WiringInterface defineStart(Class<? super T> clz, Consumer<? super T> start) {
 		return define(clz, null, start, null);
 	}
 
-	/**
-	 * Optional
-	 */
 	@Override
 	public <T> _WiringInterface defineStop(Class<? super T> clz, Consumer<? super T> stop) {
 		return define(clz, null, null, stop);
 	}
 
-	/**
-	 * Optional
-	 */
 	@Override
 	public <T> _WiringInterface defineStartStop(Class<? super T> clz, Consumer<? super T> start,
 			Consumer<? super T> stop) {
@@ -135,18 +115,6 @@ public class _WiringDoer implements _WiringInterface {
 		return this;
 	}
 
-	/**
-	 * Creates bean with its dependency objects and wires them up recursively.
-	 * Defined construction suppliers or no-argument constructors are invoked to
-	 * create beans if not created yet. Beans are treated as 'singletons' within the
-	 * Wiring context. Multiple connects of classes are ignored.
-	 * 
-	 * @param <T>
-	 * @param classDependent class of bean to begin with recursive construction and
-	 *                       injection
-	 * @return injector
-	 * @throws Exception
-	 */
 	@Override
 	public <T extends Dependent> _WiringInterface connectAll(Class<T> classDependent) {
 		_WiringHelper helper = _WiringHelper.setContext(contextName);
@@ -172,11 +140,6 @@ public class _WiringDoer implements _WiringInterface {
 		return this;
 	}
 
-	/**
-	 * Runs for all beans its start method if it was defined by
-	 * {@link #defineStart(Class, Consumer)} or by the implementation of the
-	 * {@link Lifecycle} interface.
-	 */
 	@Override
 	public _WiringInterface start() {
 		_WiringHelper helper = _WiringHelper.getContext(contextName);
@@ -216,11 +179,6 @@ public class _WiringDoer implements _WiringInterface {
 		}
 	}
 
-	/**
-	 * Runs for all beans its stop method if it was defined by
-	 * {@link #defineStop(Class, Consumer)} or by the implementation of the
-	 * {@link Lifecycle} interface.
-	 */
 	@Override
 	public _WiringInterface stop() {
 		_WiringHelper helper = _WiringHelper.getContext(contextName);
@@ -256,14 +214,6 @@ public class _WiringDoer implements _WiringInterface {
 		}
 	}
 
-	/**
-	 * Retrieves bean by given class of the current context or null if it was not
-	 * found.
-	 * 
-	 * @param <T> dedicated type
-	 * @param clz class
-	 * @return bean or null
-	 */
 	@Override
 	public <T> T get(Class<T> clz) {
 		return get(clz.getName());
@@ -329,7 +279,6 @@ public class _WiringDoer implements _WiringInterface {
 		return (T) objectMap.get(name);
 	}
 
-	// TODO move to helper
 	public Object getOrCreateObject(Class<?> clz) throws Exception {
 		String name = clz.getName();
 		if (!objectMap.containsKey(name)) {

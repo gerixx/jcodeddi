@@ -5,14 +5,21 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import coded.dependency.injection.Dependent;
+import coded.dependency.injection.Lifecycle;
 import coded.dependency.injection.LogBindingInterface;
+import coded.dependency.injection.Wiring;
 
 public interface _WiringInterface {
 
+	/**
+	 * Set your own log target by implementing {@link LogBindingInterface}. Default
+	 * log target is System.out. Set null to disable logs.
+	 */
 	_WiringInterface setLogger(LogBindingInterface logger);
 
 	/**
-	 * Optional, otherwise default constructor is used.
+	 * Optional, defines the supplier of the given class, otherwise the default
+	 * constructor is used.
 	 * 
 	 * @param clz
 	 * @param construction
@@ -21,25 +28,31 @@ public interface _WiringInterface {
 	<T> _WiringInterface defineConstruction(Class<? super T> clz, Supplier<? super T> construction);
 
 	/**
-	 * Optional
+	 * Optional, defines the consumer for the given class instance (the bean) which
+	 * is executed on {@link Wiring#start()}. See also interface {@link Lifecycle}
+	 * which can be used alternatively.
 	 */
 	<T> _WiringInterface defineStart(Class<? super T> clz, Consumer<? super T> start);
 
 	/**
-	 * Optional
+	 * Optional, defines the consumer for the given class instance (the bean) which
+	 * is executed on {@link Wiring#stop()}. See also interface {@link Lifecycle}
+	 * which can be used alternatively.
 	 */
 	<T> _WiringInterface defineStop(Class<? super T> clz, Consumer<? super T> stop);
 
 	/**
-	 * Optional
+	 * Optional, for convenience, it combines {@link #defineStart(Class, Consumer)}
+	 * and {@link #defineStop(Class, Consumer)}
 	 */
 	<T> _WiringInterface defineStartStop(Class<? super T> clz, Consumer<? super T> start, Consumer<? super T> stop);
 
 	/**
-	 * Creates dependency objects and wires them up recursively. Defined
-	 * construction supplier or no-argument constructors are invoked to create
-	 * objects if not created yet. Objects are treated as 'singletons' within the
-	 * Wiring context. Multiple connects of classes are ignored.
+	 * Creates dependency objects (the beans) and wires them up recursively. Defined
+	 * construction supplier or no-argument constructors are invoked to create beans
+	 * if not created yet, see also {@link #defineConstruction(Class, Supplier)}.
+	 * Beans are treated as 'singletons' within the Wiring context. Multiple
+	 * connects of classes are ignored.
 	 * 
 	 * @param <T>
 	 * @param classDependent class to begin with recursive wiring
@@ -48,20 +61,38 @@ public interface _WiringInterface {
 	 */
 	<T extends Dependent> _WiringInterface connectAll(Class<T> classDependent);
 
+	/**
+	 * Runs for all beans its start method if it was defined by
+	 * {@link #defineStart(Class, Consumer)} or by the implementation of the
+	 * {@link Lifecycle} interface.
+	 */
 	_WiringInterface start();
 
+	/**
+	 * Runs for all beans its stop method if it was defined by
+	 * {@link #defineStop(Class, Consumer)} or by the implementation of the
+	 * {@link Lifecycle} interface.
+	 */
 	_WiringInterface stop();
 
 	/**
-	 * Returns singleton instance of given class or null if not existing.
+	 * Returns the bean for the given class or null if it is not existing.
 	 * 
-	 * @param <T> dedicated type
+	 * @param <T> bean type
 	 * @param clz class
-	 * @return singleton or null
+	 * @return bean or null
 	 */
 	<T> T get(Class<T> clz);
 
+	/**
+	 * Prints the dependency tree(s) to System.out.
+	 */
 	void print();
 
+	/**
+	 * Print the dependency tree(s) to the given PrintWriter.
+	 * 
+	 * @param out
+	 */
 	void print(PrintStream out);
 }
