@@ -8,13 +8,13 @@ import org.junit.Test;
 import coded.dependency.injection.Dependency;
 import coded.dependency.injection.Dependent;
 import coded.dependency.injection.Lifecycle;
-import coded.dependency.injection.Wiring;
+import coded.dependency.injection.Injector;
 
 public class LifecycleTest {
 
 	@Test
 	public void test() throws Exception {
-		Wiring injector = Wiring.getContext("myapp");
+		Injector injector = Injector.getContext("myapp");
 		injector.defineConstruction(MyApp.class, MyAppImpl::new)
 			.defineConstruction(MyService.class, MyServiceImpl::new)
 			.connectAll(MyApp.class)

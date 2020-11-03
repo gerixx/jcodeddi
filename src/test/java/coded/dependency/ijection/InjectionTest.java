@@ -19,7 +19,7 @@ import coded.dependency.ijection.internal.fortest.MyAppImpl;
 import coded.dependency.ijection.internal.fortest.MyAppInterface;
 import coded.dependency.ijection.internal.fortest.MyServiceImpl;
 import coded.dependency.ijection.internal.fortest.MyServiceInterface;
-import coded.dependency.injection.Wiring;
+import coded.dependency.injection.Injector;
 import coded.dependency.injection.exception.BeanOutOfContextCreationException;
 import coded.dependency.injection.exception.ConstructionMissingException;
 import coded.dependency.injection.exception.DependencyCreationException;
@@ -28,7 +28,7 @@ public class InjectionTest {
 
 	@After
 	public void after() {
-		Wiring.resetAll();
+		Injector.resetAll();
 	}
 
 	/**
@@ -40,7 +40,7 @@ public class InjectionTest {
 	 */
 	@Test
 	public void testMostSimple() throws Exception {
-		Wiring injector = Wiring.getContext("main");
+		Injector injector = Injector.getContext("main");
 		A a = injector.connectAll(A.class)
 			.get(A.class);
 
@@ -64,7 +64,7 @@ public class InjectionTest {
 	 */
 	@Test
 	public void testConnectToBySupplier() throws Exception {
-		A a = Wiring.getContext("main")
+		A a = Injector.getContext("main")
 			.defineConstruction(B.class, B::new)
 			.defineConstruction(C.class, () -> new C(1, 2))
 			.connectAll(A.class)
@@ -81,7 +81,7 @@ public class InjectionTest {
 
 	@Test
 	public void testConnectInterfaces() throws Exception {
-		MyAppInterface app = Wiring.getContext("app")
+		MyAppInterface app = Injector.getContext("app")
 			.defineConstruction(MyServiceInterface.class, MyServiceImpl::new)
 			.connectAll(MyAppImpl.class)
 			.get(MyAppImpl.class);
@@ -94,14 +94,14 @@ public class InjectionTest {
 
 	@Test
 	public void testStartStop() throws Exception {
-		Wiring.getContext("app")
+		Injector.getContext("app")
 			.defineConstruction(MyServiceInterface.class, MyServiceImpl::new)
 			.defineStartStop(MyAppImpl.class, app -> greets = app.start(), app -> app.stop())
 			.defineStartStop(MyServiceImpl.class, svc -> svc.initialize(), svc -> svc.destroy())
 			.connectAll(MyAppImpl.class)
 			.start();
 
-		Wiring injector = Wiring.getContext("app");
+		Injector injector = Injector.getContext("app");
 		injector.print();
 
 		// then
@@ -123,7 +123,7 @@ public class InjectionTest {
 
 	@Test(expected = ConstructionMissingException.class)
 	public void testMissingInterfaceConstruction() throws Exception {
-		Wiring.getContext("app")
+		Injector.getContext("app")
 			.defineConstruction(MyAppImpl.class, MyAppImpl::new)
 			.connectAll(MyAppImpl.class);
 	}
@@ -135,7 +135,7 @@ public class InjectionTest {
 
 	@Test(expected = DependencyCreationException.class)
 	public void testInvalidCreationThreadContext() {
-		Wiring.getContext("app")
+		Injector.getContext("app")
 			.defineConstruction(D.class, this::createD_inNewThread)
 			.connectAll(A.class);
 	}

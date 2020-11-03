@@ -301,7 +301,7 @@ public class _WiringDoer implements _WiringInterface {
 			} else {
 				if (clz.isInterface()) {
 					throw new ConstructionMissingException("Construction needed for interface '" + clz.getName()
-							+ "', use Wiring#defineConstruction(...).");
+							+ "', use Injector#defineConstruction(...).");
 				}
 				newObject = clz.getDeclaredConstructor()
 					.newInstance();

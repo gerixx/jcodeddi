@@ -1,11 +1,11 @@
 package coded.dependency.ijection.example.vogella;
 
-import coded.dependency.injection.Wiring;
+import coded.dependency.injection.Injector;
 
 public class Main {
 
 	public static void main(String[] args) {
-		Wiring injector = Wiring.getContext("main")
+		Injector injector = Injector.getContext("main")
 			.defineConstruction(IWriter.class, NiceWriter::new) // inject NiceWriter by defining a supplier for the
 																// IWriter bean
 			.connectAll(MySpringBeanWithDependency.class);

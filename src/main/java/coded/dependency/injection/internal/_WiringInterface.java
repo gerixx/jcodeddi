@@ -5,9 +5,9 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import coded.dependency.injection.Dependent;
+import coded.dependency.injection.Injector;
 import coded.dependency.injection.Lifecycle;
 import coded.dependency.injection.LogBindingInterface;
-import coded.dependency.injection.Wiring;
 
 public interface _WiringInterface {
 
@@ -29,14 +29,14 @@ public interface _WiringInterface {
 
 	/**
 	 * Optional, defines the consumer for the given class instance (the bean) which
-	 * is executed on {@link Wiring#start()}. See also interface {@link Lifecycle}
+	 * is executed on {@link Injector#start()}. See also interface {@link Lifecycle}
 	 * which can be used alternatively.
 	 */
 	<T> _WiringInterface defineStart(Class<? super T> clz, Consumer<? super T> start);
 
 	/**
 	 * Optional, defines the consumer for the given class instance (the bean) which
-	 * is executed on {@link Wiring#stop()}. See also interface {@link Lifecycle}
+	 * is executed on {@link Injector#stop()}. See also interface {@link Lifecycle}
 	 * which can be used alternatively.
 	 */
 	<T> _WiringInterface defineStop(Class<? super T> clz, Consumer<? super T> stop);
@@ -51,7 +51,7 @@ public interface _WiringInterface {
 	 * Creates dependency objects (the beans) and wires them up recursively. Defined
 	 * construction supplier or no-argument constructors are invoked to create beans
 	 * if not created yet, see also {@link #defineConstruction(Class, Supplier)}.
-	 * Beans are treated as 'singletons' within the Wiring context. Multiple
+	 * Beans are treated as 'singletons' within the injector context. Multiple
 	 * connects of classes are ignored.
 	 * 
 	 * @param <T>

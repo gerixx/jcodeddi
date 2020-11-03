@@ -2,12 +2,12 @@ package coded.dependency.ijection.example.springfw.guru;
 
 import java.util.List;
 
-import coded.dependency.injection.Wiring;
+import coded.dependency.injection.Injector;
 
 public class DiExampleApplication {
 
 	public static void main(String[] args) {
-		Wiring injector = Wiring.getContext("main")
+		Injector injector = Injector.getContext("main")
 			.setLogger(null) // disable logging
 			.defineConstruction(ProductService.class, ProductServiceImpl::new)
 			.connectAll(MyController.class);
