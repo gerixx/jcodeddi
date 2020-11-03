@@ -9,13 +9,12 @@ import coded.dependency.injection.Dependency;
 import coded.dependency.injection.Dependent;
 import coded.dependency.injection.Lifecycle;
 import coded.dependency.injection.Wiring;
-import coded.dependency.injection.WiringInterface;
 
 public class LifecycleTest {
 
 	@Test
 	public void test() throws Exception {
-		WiringInterface injector = Wiring.getContext("myapp");
+		Wiring injector = Wiring.getContext("myapp");
 		injector.defineConstruction(MyApp.class, MyAppImpl::new)
 			.defineConstruction(MyService.class, MyServiceImpl::new)
 			.connectAll(MyApp.class)

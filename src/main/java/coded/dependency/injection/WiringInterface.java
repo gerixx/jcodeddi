@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 
 public interface WiringInterface {
 
-	Wiring setLogger(LogBindingInterface logger);
+	WiringInterface setLogger(LogBindingInterface logger);
 
 	/**
 	 * Optional, otherwise default constructor is used.
@@ -15,22 +15,22 @@ public interface WiringInterface {
 	 * @param construction
 	 * @return the injector
 	 */
-	<T> Wiring defineConstruction(Class<? super T> clz, Supplier<? super T> construction);
+	<T> WiringInterface defineConstruction(Class<? super T> clz, Supplier<? super T> construction);
 
 	/**
 	 * Optional
 	 */
-	<T> Wiring defineStart(Class<? super T> clz, Consumer<? super T> start);
+	<T> WiringInterface defineStart(Class<? super T> clz, Consumer<? super T> start);
 
 	/**
 	 * Optional
 	 */
-	<T> Wiring defineStop(Class<? super T> clz, Consumer<? super T> stop);
+	<T> WiringInterface defineStop(Class<? super T> clz, Consumer<? super T> stop);
 
 	/**
 	 * Optional
 	 */
-	<T> Wiring defineStartStop(Class<? super T> clz, Consumer<? super T> start, Consumer<? super T> stop);
+	<T> WiringInterface defineStartStop(Class<? super T> clz, Consumer<? super T> start, Consumer<? super T> stop);
 
 	/**
 	 * Creates dependency objects and wires them up recursively. Defined
@@ -43,11 +43,11 @@ public interface WiringInterface {
 	 * @return injector
 	 * @throws Exception
 	 */
-	<T extends Dependent> Wiring connectAll(Class<T> classDependent);
+	<T extends Dependent> WiringInterface connectAll(Class<T> classDependent);
 
-	Wiring start();
+	WiringInterface start();
 
-	Wiring stop();
+	WiringInterface stop();
 
 	/**
 	 * Returns singleton instance of given class or null if not existing.

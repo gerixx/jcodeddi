@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 import coded.dependency.injection.Dependency;
 import coded.dependency.injection.Dependent;
 import coded.dependency.injection.LogBindingInterface;
-import coded.dependency.injection.Wiring;
+import coded.dependency.injection._WiringDoer;
 import coded.dependency.injection.exception.BeanOutOfContextCreationException;
 import coded.dependency.injection.exception.ConstructionMissingException;
 import coded.dependency.injection.exception.CyclicDependencyException;
@@ -83,7 +83,7 @@ public class _WiringHelper {
 
 	@SuppressWarnings("unchecked")
 	public <T> T getObject(Dependency<T> dependency, Class<T> targetClass) throws Exception {
-		return (T) ((Wiring) Wiring.getContext(contextName)).getOrCreateObject(dependency, targetClass);
+		return (T) ((_WiringDoer) _WiringDoer.getContext(contextName)).getOrCreateObject(dependency, targetClass);
 	}
 
 	public void setLogger(LogBindingInterface logger) {
@@ -98,7 +98,7 @@ public class _WiringHelper {
 		}
 	}
 
-	public void logerror(Class<Wiring> clz, Supplier<String> msg) {
+	public void logerror(Class<_WiringDoer> clz, Supplier<String> msg) {
 		if (logger != null) {
 			StackTraceElement stackTraceElement = new Throwable().getStackTrace()[1];
 			logger.error(clz, contextName, stackTraceElement.getFileName(), stackTraceElement.getLineNumber(), msg);

@@ -1,10 +1,10 @@
 package coded.dependency.injection;
 
 /**
- * If implemented, {@link Wiring#start()} and {@link Wiring#stop()} will invoke
+ * If implemented, {@link _WiringDoer#start()} and {@link _WiringDoer#stop()} will invoke
  * this accordingly. It is ignored if a start and/or a stop consumer are
- * defined, see {@link Wiring#defineStart(Class, java.util.function.Consumer)}
- * and {@link Wiring#defineStop(Class, java.util.function.Consumer)}.
+ * defined, see {@link _WiringDoer#defineStart(Class, java.util.function.Consumer)}
+ * and {@link _WiringDoer#defineStop(Class, java.util.function.Consumer)}.
  *
  */
 public interface Lifecycle {

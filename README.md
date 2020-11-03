@@ -1,8 +1,8 @@
 # Coded Dependency Injection
 
-Use plain Java 8+ code for dependency injection. No reflection, no annotation processing needed and no 3rd party dependencies.
+Use plain Java 8+ code for dependency injection. No reflection, no annotation processing and no 3rd party dependencies.
 
-For example A depends on B and C. `Wiring` is the dependency injector provider, beans are always referenced by their class:
+For example A depends on B and C. `Wiring` is the dependency injector provider, beans are always referenced by their classes:
 
 ```
 A -> B, C
@@ -29,9 +29,9 @@ Wiring.getContext("myapp")	// creates a named dependency injector
 
 ## Proxy Based Injection
 
-A dependency injector named 'myapp' is created with `Wiring.getContext("myApp")`.
+A dependency injector named 'myapp' is created with `Wiring.getContext("myapp")`.
 The 'magic' happens when a bean like `A` is instantiated by the injector, then also its `Dependency` objects are instantiated.
-Every `Dependency` object instantiates the referenced service bean and stores it, this results in a cascading creation of the complete dependency tree with root bean `A`. 
+Every `Dependency` object instantiates the referenced service bean and stores it, this results in a cascading creation of the complete dependency tree with root bean `A` when executing `...connectAll(A.class)`. 
 
 `Dependency<B> b` acts as a proxy and returns with `b.get()` the service bean `B`.
 The `Dependency` constructor requires as first argument the client bean as type of the interface `Dependent`, 

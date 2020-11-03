@@ -20,7 +20,6 @@ import coded.dependency.ijection.internal.fortest.MyAppInterface;
 import coded.dependency.ijection.internal.fortest.MyServiceImpl;
 import coded.dependency.ijection.internal.fortest.MyServiceInterface;
 import coded.dependency.injection.Wiring;
-import coded.dependency.injection.WiringInterface;
 import coded.dependency.injection.exception.BeanOutOfContextCreationException;
 import coded.dependency.injection.exception.ConstructionMissingException;
 import coded.dependency.injection.internal.DependencyCreationException;
@@ -41,7 +40,7 @@ public class InjectionTest {
 	 */
 	@Test
 	public void testMostSimple() throws Exception {
-		WiringInterface injector = Wiring.getContext("main");
+		Wiring injector = Wiring.getContext("main");
 		A a = injector.connectAll(A.class)
 			.get(A.class);
 
@@ -102,7 +101,7 @@ public class InjectionTest {
 			.connectAll(MyAppImpl.class)
 			.start();
 
-		WiringInterface injector = Wiring.getContext("app");
+		Wiring injector = Wiring.getContext("app");
 		injector.print();
 
 		// then
