@@ -19,7 +19,7 @@ public class CyclicDependenciesTest {
 		Injector injector = Injector.getContext("app")
 			.defineConstruction(AtoB.class, AtoB::new)
 			.defineConstruction(BtoA.class, BtoA::new);
-		injector.connectAll(AtoB.class);
+		injector.makeBeans(AtoB.class);
 	}
 
 	@Test(expected = CyclicDependencyException.class)
@@ -27,12 +27,12 @@ public class CyclicDependenciesTest {
 		Injector injector = Injector.getContext("app")
 			.defineConstruction(MyServiceInterface.class, MyServiceToApp::new)
 			.defineConstruction(MyAppInterface.class, MyAppToService::new);
-		injector.connectAll(MyAppInterface.class);
+		injector.makeBeans(MyAppInterface.class);
 	}
 
 	@Test(expected = CyclicDependencyException.class)
 	public void testDeepCyclicDependency() throws Exception {
 		Injector.getContext("app")
-			.connectAll(MainWithCycle.class);
+			.makeBeans(MainWithCycle.class);
 	}
 }

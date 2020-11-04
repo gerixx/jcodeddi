@@ -116,7 +116,7 @@ public class _WiringDoer implements _WiringInterface {
 	}
 
 	@Override
-	public <T extends Dependent> _WiringInterface connectAll(Class<T> classDependent) {
+	public <T extends Dependent> _WiringInterface makeBeans(Class<T> classDependent) {
 		_WiringHelper helper = _WiringHelper.setContext(contextName);
 		helper.loginfo(_WiringDoer.class,
 				() -> "Connect all of dependent " + _WiringHelper.getPrintNameOfClass(classDependent) + " ...");
@@ -144,7 +144,7 @@ public class _WiringDoer implements _WiringInterface {
 	public _WiringInterface start() {
 		_WiringHelper helper = _WiringHelper.getContext(contextName);
 		if (connectAllList.isEmpty()) {
-			helper.logerror(_WiringDoer.class, () -> "No class injection done yet, see .connectAll().");
+			helper.logerror(_WiringDoer.class, () -> "No class injection done yet, see .makeBeans(...).");
 		} else {
 			helper.loginfo(_WiringDoer.class, () -> "Start beans...");
 			StopWatch start = StopWatch.start();
@@ -215,7 +215,7 @@ public class _WiringDoer implements _WiringInterface {
 	}
 
 	@Override
-	public <T> T get(Class<T> clz) {
+	public <T> T getBean(Class<T> clz) {
 		return get(clz.getName());
 	}
 

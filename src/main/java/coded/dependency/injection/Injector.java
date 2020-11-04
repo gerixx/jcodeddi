@@ -64,8 +64,8 @@ public class Injector implements _WiringInterface {
 	}
 
 	@Override
-	public <T extends Dependent> Injector connectAll(Class<T> classDependent) {
-		delegate.connectAll(classDependent);
+	public <T extends Dependent> Injector makeBeans(Class<T> classDependent) {
+		delegate.makeBeans(classDependent);
 		return this;
 	}
 
@@ -82,8 +82,8 @@ public class Injector implements _WiringInterface {
 	}
 
 	@Override
-	public <T> T get(Class<T> clz) {
-		return delegate.get(clz);
+	public <T> T getBean(Class<T> clz) {
+		return delegate.getBean(clz);
 	}
 
 	@Override
@@ -99,7 +99,7 @@ public class Injector implements _WiringInterface {
 	/**
 	 * Frees all internally used memory af all injectors. Use this carefully! It can
 	 * be used to free memory after injection is done with
-	 * {@link #connectAll(Class)} and optionally the lifecycle start
+	 * {@link #makeBeans(Class)} and optionally the lifecycle start
 	 * {@link #start()} was used. In this case the lifecycle support
 	 * {@link Injector#stop()} does not work anymore as all context information was
 	 * deleted.

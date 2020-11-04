@@ -41,8 +41,8 @@ public class InjectionTest {
 	@Test
 	public void testMostSimple() throws Exception {
 		Injector injector = Injector.getContext("main");
-		A a = injector.connectAll(A.class)
-			.get(A.class);
+		A a = injector.makeBeans(A.class)
+			.getBean(A.class);
 
 		B b = a.b.get();
 		assertNotNull(b);
@@ -67,8 +67,8 @@ public class InjectionTest {
 		A a = Injector.getContext("main")
 			.defineConstruction(B.class, B::new)
 			.defineConstruction(C.class, () -> new C(1, 2))
-			.connectAll(A.class)
-			.get(A.class);
+			.makeBeans(A.class)
+			.getBean(A.class);
 
 		B b = a.b.get();
 		assertNotNull(b);
@@ -83,8 +83,8 @@ public class InjectionTest {
 	public void testConnectInterfaces() throws Exception {
 		MyAppInterface app = Injector.getContext("app")
 			.defineConstruction(MyServiceInterface.class, MyServiceImpl::new)
-			.connectAll(MyAppImpl.class)
-			.get(MyAppImpl.class);
+			.makeBeans(MyAppImpl.class)
+			.getBean(MyAppImpl.class);
 
 		String greets = app.start();
 		assertEquals("greets from my service", greets);
@@ -98,34 +98,34 @@ public class InjectionTest {
 			.defineConstruction(MyServiceInterface.class, MyServiceImpl::new)
 			.defineStartStop(MyAppImpl.class, app -> greets = app.start(), app -> app.stop())
 			.defineStartStop(MyServiceImpl.class, svc -> svc.initialize(), svc -> svc.destroy())
-			.connectAll(MyAppImpl.class)
+			.makeBeans(MyAppImpl.class)
 			.start();
 
 		Injector injector = Injector.getContext("app");
 		injector.print();
 
 		// then
-		assertTrue(injector.get(MyAppImpl.class)
+		assertTrue(injector.getBean(MyAppImpl.class)
 			.isStarted());
-		assertTrue(injector.get(MyServiceImpl.class)
+		assertTrue(injector.getBean(MyServiceImpl.class)
 			.isInitialized());
 		assertEquals("greets from my service", greets);
-		assertTrue(injector.get(B.class).isStarted);
+		assertTrue(injector.getBean(B.class).isStarted);
 
 		// when stop then
 		injector.stop();
-		assertTrue(injector.get(MyAppImpl.class)
+		assertTrue(injector.getBean(MyAppImpl.class)
 			.isStopped());
-		assertTrue(injector.get(MyServiceImpl.class)
+		assertTrue(injector.getBean(MyServiceImpl.class)
 			.isStopped());
-		assertFalse(injector.get(B.class).isStarted);
+		assertFalse(injector.getBean(B.class).isStarted);
 	}
 
 	@Test(expected = ConstructionMissingException.class)
 	public void testMissingInterfaceConstruction() throws Exception {
 		Injector.getContext("app")
 			.defineConstruction(MyAppImpl.class, MyAppImpl::new)
-			.connectAll(MyAppImpl.class);
+			.makeBeans(MyAppImpl.class);
 	}
 
 	@Test(expected = BeanOutOfContextCreationException.class)
@@ -137,7 +137,7 @@ public class InjectionTest {
 	public void testInvalidCreationThreadContext() {
 		Injector.getContext("app")
 			.defineConstruction(D.class, this::createD_inNewThread)
-			.connectAll(A.class);
+			.makeBeans(A.class);
 	}
 
 	private ExecutorService exec = Executors.newSingleThreadExecutor();

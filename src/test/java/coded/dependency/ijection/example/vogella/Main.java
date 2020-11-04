@@ -8,9 +8,9 @@ public class Main {
 		Injector injector = Injector.getContext("main")
 			.defineConstruction(IWriter.class, NiceWriter::new) // inject NiceWriter by defining a supplier for the
 																// IWriter bean
-			.connectAll(MySpringBeanWithDependency.class);
+			.makeBeans(MySpringBeanWithDependency.class);
 
-		MySpringBeanWithDependency test = injector.get(MySpringBeanWithDependency.class); // no cast needed
+		MySpringBeanWithDependency test = injector.getBean(MySpringBeanWithDependency.class); // no cast needed
 		test.run();
 	}
 }

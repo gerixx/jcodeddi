@@ -4,6 +4,7 @@ import java.io.PrintStream;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import coded.dependency.injection.Dependency;
 import coded.dependency.injection.Dependent;
 import coded.dependency.injection.Injector;
 import coded.dependency.injection.Lifecycle;
@@ -59,7 +60,7 @@ public interface _WiringInterface {
 	 * @return injector
 	 * @throws Exception
 	 */
-	<T extends Dependent> _WiringInterface connectAll(Class<T> classDependent);
+	<T extends Dependent> _WiringInterface makeBeans(Class<T> classDependent);
 
 	/**
 	 * Runs for all beans its start method if it was defined by
@@ -76,13 +77,15 @@ public interface _WiringInterface {
 	_WiringInterface stop();
 
 	/**
-	 * Returns the bean for the given class or null if it is not existing.
+	 * Returns the bean for the given class or null if it does not exist. Any bean
+	 * created by {@link #makeBeans(Class)} can be accessed, including service beans
+	 * that were created by {@link Dependency} members of {@link Dependent}s.
 	 * 
 	 * @param <T> bean type
-	 * @param clz class
+	 * @param clz bean class
 	 * @return bean or null
 	 */
-	<T> T get(Class<T> clz);
+	<T> T getBean(Class<T> clz);
 
 	/**
 	 * Prints the dependency tree(s) to System.out.

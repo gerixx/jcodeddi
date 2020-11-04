@@ -10,9 +10,9 @@ public class DiExampleApplication {
 		Injector injector = Injector.getContext("main")
 			.setLogger(null) // disable logging
 			.defineConstruction(ProductService.class, ProductServiceImpl::new)
-			.connectAll(MyController.class);
+			.makeBeans(MyController.class);
 
-		List<Product> products = injector.get(MyController.class)
+		List<Product> products = injector.getBean(MyController.class)
 			.getProducts();
 
 		for (Product product : products) {

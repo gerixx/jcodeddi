@@ -17,19 +17,19 @@ public class LifecycleTest {
 		Injector injector = Injector.getContext("myapp");
 		injector.defineConstruction(MyApp.class, MyAppImpl::new)
 			.defineConstruction(MyService.class, MyServiceImpl::new)
-			.connectAll(MyApp.class)
+			.makeBeans(MyApp.class)
 			.start();
 
-		assertTrue(injector.get(MyApp.class)
+		assertTrue(injector.getBean(MyApp.class)
 			.isRunning());
-		assertTrue(injector.get(MyService.class)
+		assertTrue(injector.getBean(MyService.class)
 			.isRunning());
 
 		injector.stop();
 
-		assertFalse(injector.get(MyApp.class)
+		assertFalse(injector.getBean(MyApp.class)
 			.isRunning());
-		assertFalse(injector.get(MyService.class)
+		assertFalse(injector.getBean(MyService.class)
 			.isRunning());
 	}
 }
