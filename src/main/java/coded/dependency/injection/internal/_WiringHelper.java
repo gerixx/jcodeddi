@@ -20,19 +20,19 @@ public class _WiringHelper {
 
 	public final Map<Dependent, List<Dependency<?>>> dependencies = new HashMap<>();
 
-	private static ThreadLocal<String> context = new ThreadLocal<>();
+	private static ThreadLocal<String> threadContext = new ThreadLocal<>();
 
 	private String contextName;
 
 	private LogBindingInterface logger;
 
 	public static _WiringHelper setContext(String ctx) {
-		_WiringHelper.context.set(ctx);
+		_WiringHelper.threadContext.set(ctx);
 		return getContext(ctx);
 	}
 
-	public static _WiringHelper getContext() {
-		String contextName = context.get();
+	public static _WiringHelper getThreadContext() {
+		String contextName = threadContext.get();
 		if (contextName == null) {
 			throw new BeanOutOfContextCreationException();
 		}
@@ -50,7 +50,7 @@ public class _WiringHelper {
 	}
 
 	public static void resetContext() {
-		_WiringHelper.context.set(null);
+		_WiringHelper.threadContext.set(null);
 	}
 
 	private _WiringHelper(String contextName) {
@@ -78,7 +78,7 @@ public class _WiringHelper {
 
 	public static void restAll() {
 		wiringContextMap.clear();
-		context.set(null);
+		threadContext.set(null);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -139,5 +139,11 @@ public class _WiringHelper {
 				&& (cause instanceof BeanOutOfContextCreationException || cause instanceof CyclicDependencyException
 						|| cause instanceof ConstructionMissingException
 						|| cause instanceof DependencyCreationException);
+	}
+
+	public void reset() {
+		if (wiringContextMap.containsKey(contextName)) {
+			wiringContextMap.put(contextName, null);
+		}
 	}
 }

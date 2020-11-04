@@ -3,6 +3,7 @@ package coded.dependency.ijection;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.ExecutorService;
@@ -23,6 +24,8 @@ import coded.dependency.injection.Injector;
 import coded.dependency.injection.exception.BeanOutOfContextCreationException;
 import coded.dependency.injection.exception.ConstructionMissingException;
 import coded.dependency.injection.exception.DependencyCreationException;
+import coded.dependency.injection.internal._WiringDoer;
+import coded.dependency.injection.internal._WiringHelper;
 
 public class InjectionTest {
 
@@ -138,6 +141,24 @@ public class InjectionTest {
 		Injector.getContext("app")
 			.defineConstruction(D.class, this::createD_inNewThread)
 			.makeBeans(A.class);
+	}
+
+	@Test
+	public void testReset() {
+		Injector injector = Injector.getContext("main");
+		A a = injector.makeBeans(A.class)
+			.getBean(A.class);
+		B b = a.b.get();
+
+		assertNotNull(_WiringDoer.getContext("main"));
+		assertNotNull(_WiringHelper.getContext("main"));
+
+		injector.reset();
+		assertNull(_WiringDoer.getContext("main"));
+		assertNull(_WiringHelper.getContext("main"));
+
+		assertNotNull(b);
+		assertEquals("hello", b.hello());
 	}
 
 	private ExecutorService exec = Executors.newSingleThreadExecutor();

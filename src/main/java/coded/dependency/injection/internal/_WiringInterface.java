@@ -98,4 +98,12 @@ public interface _WiringInterface {
 	 * @param out
 	 */
 	void print(PrintStream out);
+
+	/**
+	 * Frees internal memory used by the injector. Use this carefully! After
+	 * resetting, beans cannot accessed anymore using {@link #getBean(Class)} and
+	 * the lifecycle methods {@link Injector}{@link #start()} and
+	 * {@link Injector}{@link #stop()} are not working anymore.
+	 */
+	void reset();
 }

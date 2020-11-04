@@ -4,9 +4,10 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>coded.dependency.injection</groupId>
   <artifactId>coded.dependency.injection</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.1-SNAPSHOT</version>
   <name>Coded Dependency Injection</name>
   <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>11</maven.compiler.target>
     <maven.compiler.source>11</maven.compiler.source>
   </properties>
@@ -17,4 +18,16 @@
       <version>4.12</version>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <includeEmptyDirs>false</includeEmptyDirs>
+          <finalName>jcodeddi-1.0</finalName>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

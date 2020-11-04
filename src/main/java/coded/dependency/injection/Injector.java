@@ -96,11 +96,16 @@ public class Injector implements _WiringInterface {
 		delegate.print(out);
 	}
 
+	@Override
+	public void reset() {
+		delegate.reset();
+	}
+
 	/**
 	 * Frees all internally used memory af all injectors. Use this carefully! It can
-	 * be used to free memory after injection is done with
-	 * {@link #makeBeans(Class)} and optionally the lifecycle start
-	 * {@link #start()} was used. In this case the lifecycle support
+	 * be used to free memory after injection is done with {@link #makeBeans(Class)}
+	 * and optionally the lifecycle start {@link #start()} was used. In this case
+	 * accessing beans using {@link #getBean(Class)} and the lifecycle support
 	 * {@link Injector#stop()} does not work anymore as all context information was
 	 * deleted.
 	 */

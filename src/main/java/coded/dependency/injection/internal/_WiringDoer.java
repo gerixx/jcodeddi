@@ -336,4 +336,13 @@ public class _WiringDoer implements _WiringInterface {
 		_WiringHelper.restAll();
 	}
 
+	@Override
+	public void reset() {
+		if (wiringContextMap.containsKey(contextName)) {
+			wiringContextMap.put(contextName, null);
+			_WiringHelper.getContext(contextName)
+				.reset();
+		}
+	}
+
 }

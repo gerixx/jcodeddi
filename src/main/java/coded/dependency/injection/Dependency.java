@@ -32,7 +32,7 @@ public class Dependency<T> {
 		this.targetClass = targetClass;
 		_WiringHelper helper = null;
 		try {
-			helper = _WiringHelper.getContext();
+			helper = _WiringHelper.getThreadContext();
 			assert helper != null;
 			helper.addNewDependency(d, this);
 			target = helper.getObject(this, targetClass);
