@@ -55,6 +55,10 @@ public class InjectionTest {
 		assertNotNull(c);
 		assertEquals("world", c.world());
 
+		assertTrue(injector.getBean(A.class) == a);
+		assertTrue(injector.getBean(B.class) == b);
+		assertTrue(injector.getBean(C.class) == c);
+
 		injector.print();
 	}
 
