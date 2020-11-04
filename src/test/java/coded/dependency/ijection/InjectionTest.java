@@ -84,13 +84,20 @@ public class InjectionTest {
 
 	@Test
 	public void testConnectInterfaces() throws Exception {
-		MyAppInterface app = Injector.getContext("app")
-			.defineConstruction(MyServiceInterface.class, MyServiceImpl::new)
+		Injector injector = Injector.getContext("app");
+
+		MyAppInterface app = injector.defineConstruction(MyServiceInterface.class, MyServiceImpl::new)
 			.makeBeans(MyAppImpl.class)
 			.getBean(MyAppImpl.class);
 
 		String greets = app.start();
 		assertEquals("greets from my service", greets);
+
+		MyServiceInterface beanAsInterface = injector.getBean(MyServiceInterface.class);
+		assertEquals("greets from my service", beanAsInterface.greets());
+
+		MyServiceImpl beanAsImplementation = injector.getBean(MyServiceImpl.class);
+		assertEquals("greets from my service", beanAsImplementation.greets());
 	}
 
 	String greets = null;
