@@ -1,8 +1,9 @@
 # Coded Dependency Injection
 
-Use plain Java 8+ code for dependency injection. No reflection, no annotation processing and no 3rd party dependencies.
+Can be used if reflection and annotation processing is not allowed or possible, the memory footprint is also very very low.
+Minimum Java version is 8, recommended is version 11+.
 
-For example A depends on B and C. `Wiring` is the dependency injector provider, beans are always referenced by their classes:
+For example A depends on B and C. `Injector` is the dependency injector provider, beans are always referenced by their classes:
 
 ```
 A -> B, C
@@ -22,40 +23,53 @@ class A implements Dependent {
 	b.get().foo(); // b is a proxy to the service object of type B
 }
 
-Wiring.getContext("myapp")	// creates a named dependency injector
-	.connectAll(A.class); 	// creates the beans and injects them accordingly
+Injector.getContext("myapp")	// creates a named dependency injector
+	.makeBeans(A.class);	// creates the beans and injects them accordingly
 
 ```
 
 ## Proxy Based Injection
 
-A dependency injector named 'myapp' is created with `Wiring.getContext("myapp")`.
+A dependency injector named 'myapp' is created with `Injector.getContext("myapp")`.
 The 'magic' happens when a bean like `A` is instantiated by the injector, then also its `Dependency` objects are instantiated.
-Every `Dependency` object instantiates the referenced service bean and stores it, this results in a cascading creation of the complete dependency tree with root bean `A` when executing `...connectAll(A.class)`. 
+Every `Dependency` object instantiates the referenced service bean and stores it, this results in a cascading creation of the complete dependency tree with root bean `A` when executing `...makeBeans(A.class)`. 
 
 `Dependency<B> b` acts as a proxy and returns with `b.get()` the service bean `B`.
 The `Dependency` constructor requires as first argument the client bean as type of the interface `Dependent`, 
 and second the service class.
 
-`Wiring#connectAll(clz)` creates the dependency tree and starts top down instantiation of all beans beginning with `clz`.
+`Injector#makeBeans(clz)` creates the dependency tree and starts top down instantiation of all beans beginning with `clz`.
 
-When using the `Wiring` API every bean is referenced by its class. For example to retrieve bean `A` use 
-`Wiring.getContext("myapp").get(A.class);`.
+When using the `Injector` API every bean can be addressed by its class. For example to retrieve bean `A` use 
+`Injector.getContext("myapp").getBean(A.class);`.
 
-Optional bean construction `Supplier`s can be defined to avoid reflection. If not defined, default constructors are used for creating beans (`Class#newInstance()`), for example:
+## IoC
+
+Lambdas can be used for construction and the lifecycle of beans.
+
+An optional bean construction `Supplier` can be defined for its class or interface (see also JUnit tests with interfaces).
+With that no reflection is needed to create objects. 
+If not defined, default constructors are used for creating beans (`Class#newInstance()`).
+
+Example:
 
 ```Java
 int val1=0, val2=0;
 
-Wiring.getContext("myapp")
+Injector.getContext("myapp")
 	.defineConstruction(A.class, A::new) // only needed if reflection should/cannot be used
 	.defineConstruction(B.class, () -> new B(val1, val2))
-	.connectAll(A.class)
+	.makeBeans(A.class)
 	...
 ```
 
-Classes are treated as singletons within the scope of a named dependency injector, 
-that means for every class only one instance is created within a `Wiring` context.
+Classes are treated as singleton beans within the scope of a named dependency injector. 
+That means for every class one object is created within an `Injector` context.
+
+Optionally the basic lifecycle of beans can be controlled by `Injector#start()` and `Injector#stop()`.
+With that the injector invokes the start/stop consumer of a bean if it was defined by `Injector#defineStart()`
+`Injector#defineStop()`. 
+Alternatively the interface `Lifecycle` can be implemented, see also "Lifecycle" example below.
 
 ## Features
 
@@ -69,7 +83,7 @@ Individual consumers for starting beans can be defined.
 
 Individual consumers for stopping beans can be defined.
 
-Multiple independent injector instances (wiring contexts) are possible.
+Multiple independent injector instances (Injector contexts) are possible.
 
 Cyclic dependencies are prohibited.
 
@@ -126,7 +140,7 @@ class MyServiceImpl implements MyService {
 class MyAppImpl implements MyApp {
 	private boolean isRunning;
 	
-	Dependency<MyService> svc = new Dependency<>(this, MyService.class);
+	Dependency<MyService> svc = new Dependency<>(this, MyService.class); // svc.get() can also be inlined
 
 	@Override
 	public void start() {
@@ -153,22 +167,22 @@ For every interface that is used in a `Dependency` declaration, a construction s
 See for example `defineConstruction(MyService.class, MyServiceImpl::new)`.
 
 ```Java
-WiringInterface injector = Wiring.getContext("myapp");
+Injector injector = .getContext("myapp");
 injector.defineConstruction(MyApp.class, MyAppImpl::new)
 	.defineConstruction(MyService.class, MyServiceImpl::new)
-	.connectAll(MyApp.class)
+	.makeBeans(MyApp.class)
 	.start();
 
-assertTrue(injector.get(MyApp.class)
+assertTrue(injector.getBean(MyApp.class)
 	.isRunning());
-assertTrue(injector.get(MyService.class)
+assertTrue(injector.getBean(MyService.class)
 	.isRunning());
 
 injector.stop();
 
-assertFalse(injector.get(MyApp.class)
+assertFalse(injector.getBean(MyApp.class)
 	.isRunning());
-assertFalse(injector.get(MyService.class)
+assertFalse(injector.getBean(MyService.class)
 	.isRunning());
 ```
 
