@@ -33,6 +33,10 @@ public class Injector implements _WiringInterface {
 		return new Injector(_WiringDoer.getContext(contextName));
 	}
 
+	public static String[] getContextNames() {
+		return _WiringDoer.getContextNames();
+	}
+
 	@Override
 	public String getName() {
 		return delegate.getName();

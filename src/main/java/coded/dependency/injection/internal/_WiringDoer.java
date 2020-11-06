@@ -73,6 +73,11 @@ public class _WiringDoer implements _WiringInterface {
 		return wiringContextMap.get(contextName);
 	}
 
+	public static String[] getContextNames() {
+		return wiringContextMap.keySet()
+			.toArray(String[]::new);
+	}
+
 	@Override
 	public String getName() {
 		return contextName;

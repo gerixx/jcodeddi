@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -59,6 +60,17 @@ public class InjectionTest {
 		assertTrue(injector.getBean(C.class) == c);
 
 		injector.print();
+	}
+
+	@Test
+	public void testContextNames() {
+		Injector.getContext("ctx1");
+		Injector.getContext("ctx2");
+
+		assertEquals("[ctx1, ctx2]", Arrays.toString(Injector.getContextNames()));
+
+		Injector.removeAll();
+		assertEquals(0, Injector.getContextNames().length);
 	}
 
 	/**
@@ -150,13 +162,6 @@ public class InjectionTest {
 		new A();
 	}
 
-	@Test(expected = DependencyCreationException.class)
-	public void testInvalidCreationThreadContext() {
-		Injector.getContext("app")
-			.defineConstruction(D.class, this::createD_inNewThread)
-			.makeBeans(A.class);
-	}
-
 	@Test
 	public void testRemoveInjector() {
 		Injector injector = Injector.getContext("main");
@@ -209,6 +214,13 @@ public class InjectionTest {
 		injector.start();
 		validateStartStopWorks(injector);
 		// reference 'injector' is still working but could be garbage collected now
+	}
+
+	@Test(expected = DependencyCreationException.class)
+	public void testInvalidCreationThreadContext() {
+		Injector.getContext("app")
+			.defineConstruction(D.class, this::createD_inNewThread)
+			.makeBeans(A.class);
 	}
 
 	private ExecutorService exec = Executors.newSingleThreadExecutor();
