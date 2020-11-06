@@ -141,9 +141,7 @@ public class _WiringHelper {
 						|| cause instanceof DependencyCreationException);
 	}
 
-	public void reset() {
-		if (wiringContextMap.containsKey(contextName)) {
-			wiringContextMap.put(contextName, null);
-		}
+	public void remove() {
+		wiringContextMap.remove(contextName);
 	}
 }

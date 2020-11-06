@@ -34,6 +34,7 @@ public class _WiringDoer implements _WiringInterface {
 	private final Set<String> objectCreationPending = new HashSet<>();
 	private final List<String> connectAllList = new ArrayList<>();
 	private final String contextName;
+	private final _WiringHelper helper;
 
 	public static class StopWatch {
 		private Instant start;
@@ -54,8 +55,8 @@ public class _WiringDoer implements _WiringInterface {
 
 	private _WiringDoer(String name) {
 		this.contextName = name;
-		_WiringHelper.getContext(contextName)
-			.setLogger(new LogBindingAdapter(new PrintWriter(System.out, true)));
+		this.helper = _WiringHelper.getContext(contextName);
+		helper.setLogger(new LogBindingAdapter(new PrintWriter(System.out, true)));
 	}
 
 	/**
@@ -73,9 +74,13 @@ public class _WiringDoer implements _WiringInterface {
 	}
 
 	@Override
+	public String getName() {
+		return contextName;
+	}
+
+	@Override
 	public _WiringInterface setLogger(LogBindingInterface logger) {
-		_WiringHelper.getContext(contextName)
-			.setLogger(logger);
+		helper.setLogger(logger);
 		return this;
 	}
 
@@ -142,7 +147,6 @@ public class _WiringDoer implements _WiringInterface {
 
 	@Override
 	public _WiringInterface start() {
-		_WiringHelper helper = _WiringHelper.getContext(contextName);
 		if (connectAllList.isEmpty()) {
 			helper.logerror(_WiringDoer.class, () -> "No class injection done yet, see .makeBeans(...).");
 		} else {
@@ -181,7 +185,6 @@ public class _WiringDoer implements _WiringInterface {
 
 	@Override
 	public _WiringInterface stop() {
-		_WiringHelper helper = _WiringHelper.getContext(contextName);
 		helper.loginfo(_WiringDoer.class, () -> "Stop beans...");
 		StopWatch start = StopWatch.start();
 		connectAllList.forEach(name -> {
@@ -234,7 +237,6 @@ public class _WiringDoer implements _WiringInterface {
 
 	@Override
 	public void print(PrintStream out) {
-		_WiringHelper helper = _WiringHelper.getContext(contextName);
 		connectAllList.forEach(name -> {
 			Object object = objectMap.get(name);
 			if (object instanceof Dependent) {
@@ -283,7 +285,6 @@ public class _WiringDoer implements _WiringInterface {
 		String name = clz.getName();
 		if (!objectMap.containsKey(name)) {
 			objectCreationPending.add(name);
-			_WiringHelper helper = _WiringHelper.getContext(contextName);
 			StopWatch start = StopWatch.start();
 			final Object newObject;
 			if (objectConstructionMap.containsKey(name)) {
@@ -331,18 +332,15 @@ public class _WiringDoer implements _WiringInterface {
 	/**
 	 * Clears all contexts.
 	 */
-	public static void resetAll() {
+	public static void removeAll() {
 		wiringContextMap.clear();
 		_WiringHelper.restAll();
 	}
 
 	@Override
-	public void reset() {
-		if (wiringContextMap.containsKey(contextName)) {
-			wiringContextMap.put(contextName, null);
-			_WiringHelper.getContext(contextName)
-				.reset();
-		}
+	public void remove() {
+		wiringContextMap.remove(contextName);
+		helper.remove();
 	}
 
 }

@@ -24,14 +24,13 @@ import coded.dependency.injection.Injector;
 import coded.dependency.injection.exception.BeanOutOfContextCreationException;
 import coded.dependency.injection.exception.ConstructionMissingException;
 import coded.dependency.injection.exception.DependencyCreationException;
-import coded.dependency.injection.internal._WiringDoer;
 import coded.dependency.injection.internal._WiringHelper;
 
 public class InjectionTest {
 
 	@After
 	public void after() {
-		Injector.resetAll();
+		Injector.removeAll();
 	}
 
 	/**
@@ -119,6 +118,10 @@ public class InjectionTest {
 		injector.print();
 
 		// then
+		validateStartStopWorks(injector);
+	}
+
+	private void validateStartStopWorks(Injector injector) {
 		assertTrue(injector.getBean(MyAppImpl.class)
 			.isStarted());
 		assertTrue(injector.getBean(MyServiceImpl.class)
@@ -155,21 +158,57 @@ public class InjectionTest {
 	}
 
 	@Test
-	public void testReset() {
+	public void testRemoveInjector() {
 		Injector injector = Injector.getContext("main");
 		A a = injector.makeBeans(A.class)
 			.getBean(A.class);
 		B b = a.b.get();
 
-		assertNotNull(_WiringDoer.getContext("main"));
+		assertNotNull(Injector.getContext("main"));
+		assertTrue(a == Injector.getContext("main")
+			.getBean(A.class));
+		assertTrue(a.c.get() == Injector.getContext("main")
+			.getBean(C.class));
+		assertTrue(b == Injector.getContext("main")
+			.getBean(B.class));
 		assertNotNull(_WiringHelper.getContext("main"));
 
-		injector.reset();
-		assertNull(_WiringDoer.getContext("main"));
-		assertNull(_WiringHelper.getContext("main"));
+		// when
+		injector.remove();
+
+		// then
+		Injector injector2 = Injector.getContext("main"); // a new injector is created
+		assertEquals(injector.getName(), injector2.getName());
+		assertNull(injector2.getBean(A.class));
+		assertNull(_WiringHelper.getContext("main")
+			.getDependencies(a));
 
 		assertNotNull(b);
 		assertEquals("hello", b.hello());
+	}
+
+	@Test
+	public void testRemoveInjectorLifecycleStillWorking() {
+		Injector injector = Injector.getContext("app")
+			.defineConstruction(MyServiceInterface.class, MyServiceImpl::new)
+			.defineStartStop(MyAppImpl.class, app -> greets = app.start(), app -> app.stop())
+			.defineStartStop(MyServiceImpl.class, svc -> svc.initialize(), svc -> svc.destroy())
+			.makeBeans(MyAppImpl.class);
+
+		assertNotNull(Injector.getContext("app")
+			.getBean(MyServiceInterface.class));
+
+		// when
+		injector.remove();
+
+		// then
+		Injector injector2 = Injector.getContext("app"); // a new injector is created
+		assertEquals(injector.getName(), injector2.getName());
+		assertNull(injector2.getBean(MyServiceInterface.class));
+
+		injector.start();
+		validateStartStopWorks(injector);
+		// reference 'injector' is still working but could be garbage collected now
 	}
 
 	private ExecutorService exec = Executors.newSingleThreadExecutor();

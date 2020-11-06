@@ -13,6 +13,11 @@ import coded.dependency.injection.LogBindingInterface;
 public interface _WiringInterface {
 
 	/**
+	 * @return context name
+	 */
+	String getName();
+
+	/**
 	 * Set your own log target by implementing {@link LogBindingInterface}. Default
 	 * log target is System.out. Set null to disable logs.
 	 */
@@ -100,10 +105,10 @@ public interface _WiringInterface {
 	void print(PrintStream out);
 
 	/**
-	 * Frees internal memory used by the injector. Use this carefully! After
-	 * resetting, beans cannot accessed anymore using {@link #getBean(Class)} and
-	 * the lifecycle methods {@link Injector}{@link #start()} and
-	 * {@link Injector}{@link #stop()} are not working anymore.
+	 * Removes this injector context from injection manage. Can be used to free
+	 * internal memory if an injector is not needed anymore. Use this carefully!
+	 * After removal {@link Injector#getContext(String)} with name of this instance
+	 * would create a new injector context.
 	 */
-	void reset();
+	void remove();
 }

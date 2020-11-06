@@ -34,6 +34,11 @@ public class Injector implements _WiringInterface {
 	}
 
 	@Override
+	public String getName() {
+		return delegate.getName();
+	}
+
+	@Override
 	public Injector setLogger(LogBindingInterface logger) {
 		delegate.setLogger(logger);
 		return this;
@@ -97,20 +102,18 @@ public class Injector implements _WiringInterface {
 	}
 
 	@Override
-	public void reset() {
-		delegate.reset();
+	public void remove() {
+		delegate.remove();
 	}
 
 	/**
-	 * Frees all internally used memory af all injectors. Use this carefully! It can
-	 * be used to free memory after injection is done with {@link #makeBeans(Class)}
-	 * and optionally the lifecycle start {@link #start()} was used. In this case
-	 * accessing beans using {@link #getBean(Class)} and the lifecycle support
-	 * {@link Injector#stop()} does not work anymore as all context information was
-	 * deleted.
+	 * Removes all injector contexts of the injection management. Can be used to
+	 * free all internally used memory. Use this carefully!
+	 * {@link #getContext(String)} would create new injector instance for a
+	 * previously used context name.
 	 */
-	public static void resetAll() {
-		_WiringDoer.resetAll();
+	public static void removeAll() {
+		_WiringDoer.removeAll();
 	}
 
 }
