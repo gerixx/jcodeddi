@@ -13,29 +13,49 @@ public class LogBindingAdapter implements LogBindingInterface {
 		this.out = out;
 	}
 
-	@Override
-	public void error(Class<?> clz, String contextName, String fileName, int lineNumber, Supplier<String> msgSupplier) {
-		out.printf("%s [ERROR] injector '%s' %s - thread: %s - %s (%s:%d)%n", new Date(), contextName,
-				msgSupplier.get(), Thread.currentThread()
-					.getName(),
-				clz.getName(), fileName, lineNumber);
+	/**
+	 * Retrieve first stack element that belongs to Injection API usage code.
+	 * 
+	 * @param stackTrace
+	 * @return stack trace element using the current injection API
+	 */
+	protected StackTraceElement getStackTraceElement(StackTraceElement[] stackTrace) {
+		for (int i = 0; i < stackTrace.length; i++) {
+			StackTraceElement elem = stackTrace[i];
+			if (elem.getClassName()
+				.equals(Injector.class.getName())
+					|| elem.getClassName()
+						.equals(Dependency.class.getName())) {
+				return stackTrace[i + 1];
+			}
+		}
+		return stackTrace[1];
 	}
 
 	@Override
-	public void error(Class<?> clz, String contextName, String fileName, int lineNumber, Supplier<String> msgSupplier,
-			Throwable t) {
-		out.printf("%s [ERROR] injector '%s' %s - thread: %s - %s (%s:%d)%n%s%n", new Date(), contextName,
-				msgSupplier.get(), Thread.currentThread()
-					.getName(),
-				clz.getName(), fileName, lineNumber, throwableToString(t));
+	public void error(String contextName, StackTraceElement[] stack, Supplier<String> msgSupplier) {
+		StackTraceElement stackTraceElement = getStackTraceElement(new Throwable().getStackTrace());
+		print("ERROR", contextName, stackTraceElement.getFileName(), stackTraceElement.getLineNumber(), msgSupplier);
 	}
 
 	@Override
-	public void info(Class<?> clz, String contextName, String fileName, int lineNumber, Supplier<String> msgSupplier) {
-		out.printf("%s [INFO] injector '%s' %s - thread: %s - %s (%s:%d)%n", new Date(), contextName, msgSupplier.get(),
+	public void error(String contextName, StackTraceElement[] stack, Supplier<String> msgSupplier, Throwable t) {
+		error(contextName, stack, msgSupplier);
+		out.printf("%s%n", throwableToString(t));
+	}
+
+	@Override
+	public void info(String contextName, StackTraceElement[] stack, Supplier<String> msgSupplier) {
+		StackTraceElement stackTraceElement = getStackTraceElement(new Throwable().getStackTrace());
+		print("INFO", contextName, stackTraceElement.getFileName(), stackTraceElement.getLineNumber(), msgSupplier);
+	}
+
+	private void print(String level, String contextName, String fileName, int lineNumber,
+			Supplier<String> msgSupplier) {
+		out.printf("%s [%s] injector '%s' %s - thread: %s (%s:%d)%n", new Date(), level, contextName, msgSupplier.get(),
 				Thread.currentThread()
 					.getName(),
-				clz.getName(), fileName, lineNumber);
+				fileName, lineNumber);
 	}
 
 	private String throwableToString(Throwable t) {

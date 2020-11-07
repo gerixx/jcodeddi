@@ -90,25 +90,21 @@ public class _WiringHelper {
 		this.logger = logger;
 	}
 
-	// TODO use suppliers
 	public void loginfo(Class<?> clz, Supplier<String> msg) {
 		if (logger != null) {
-			StackTraceElement stackTraceElement = new Throwable().getStackTrace()[1];
-			logger.info(clz, contextName, stackTraceElement.getFileName(), stackTraceElement.getLineNumber(), msg);
+			logger.info(contextName, new Throwable().getStackTrace(), msg);
 		}
 	}
 
 	public void logerror(Class<_WiringDoer> clz, Supplier<String> msg) {
 		if (logger != null) {
-			StackTraceElement stackTraceElement = new Throwable().getStackTrace()[1];
-			logger.error(clz, contextName, stackTraceElement.getFileName(), stackTraceElement.getLineNumber(), msg);
+			logger.error(contextName, new Throwable().getStackTrace(), msg);
 		}
 	}
 
 	public void logerror(Class<?> clz, Supplier<String> msg, Exception e) {
 		if (logger != null) {
-			StackTraceElement stackTraceElement = new Throwable().getStackTrace()[1];
-			logger.error(clz, contextName, stackTraceElement.getFileName(), stackTraceElement.getLineNumber(), msg, e);
+			logger.error(contextName, new Throwable().getStackTrace(), msg, e);
 		}
 	}
 

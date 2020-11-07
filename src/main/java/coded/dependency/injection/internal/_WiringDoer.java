@@ -129,7 +129,7 @@ public class _WiringDoer implements _WiringInterface {
 	public <T extends Dependent> _WiringInterface makeBeans(Class<T> classDependent) {
 		_WiringHelper helper = _WiringHelper.setContext(contextName);
 		helper.loginfo(_WiringDoer.class,
-				() -> "Connect all of dependent " + _WiringHelper.getPrintNameOfClass(classDependent) + " ...");
+				() -> "Make beans for dependent " + _WiringHelper.getPrintNameOfClass(classDependent) + " ...");
 		StopWatch start = StopWatch.start();
 		try {
 			getOrCreateObject(classDependent);
@@ -146,7 +146,7 @@ public class _WiringDoer implements _WiringInterface {
 		} finally {
 			_WiringHelper.resetContext();
 		}
-		helper.loginfo(_WiringDoer.class, () -> "Connect all finished in " + start.stop() + "ms.");
+		helper.loginfo(_WiringDoer.class, () -> "Make beans finished in " + start.stop() + "ms.");
 		return this;
 	}
 
