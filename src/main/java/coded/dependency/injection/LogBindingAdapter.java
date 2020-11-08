@@ -42,6 +42,7 @@ public class LogBindingAdapter implements LogBindingInterface {
 	public void error(String contextName, StackTraceElement[] stack, Supplier<String> msgSupplier, Throwable t) {
 		error(contextName, stack, msgSupplier);
 		out.printf("%s%n", throwableToString(t));
+		out.flush();
 	}
 
 	@Override
@@ -56,6 +57,7 @@ public class LogBindingAdapter implements LogBindingInterface {
 				Thread.currentThread()
 					.getName(),
 				fileName, lineNumber);
+		out.flush();
 	}
 
 	private String throwableToString(Throwable t) {

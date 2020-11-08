@@ -13,10 +13,10 @@ import java.util.concurrent.Executors;
 import org.junit.After;
 import org.junit.Test;
 
-import coded.dependency.injection.Injector;
 import coded.dependency.injection.exception.BeanOutOfContextCreationException;
 import coded.dependency.injection.exception.ConstructionMissingException;
 import coded.dependency.injection.exception.DependencyCreationException;
+import coded.dependency.injection.internal._LogBindingAdapterDebug;
 import coded.dependency.injection.internal._WiringHelper;
 import coded.dependency.injection.internal.fortest.A;
 import coded.dependency.injection.internal.fortest.B;
@@ -120,6 +120,7 @@ public class InjectionTest {
 	@Test
 	public void testStartStop() throws Exception {
 		Injector.getContext("app")
+			.setLogger(new _LogBindingAdapterDebug())
 			.defineConstruction(MyServiceInterface.class, MyServiceImplementation::new)
 			.defineStartStop(MyApplicationImpl.class, app -> greets = app.start(), app -> app.stop())
 			.defineStartStop(MyServiceImplementation.class, svc -> svc.initialize(), svc -> svc.destroy())
