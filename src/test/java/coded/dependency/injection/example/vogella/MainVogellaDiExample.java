@@ -2,7 +2,7 @@ package coded.dependency.injection.example.vogella;
 
 import coded.dependency.injection.Injector;
 
-public class Main {
+public class MainVogellaDiExample {
 
 	public static void main(String[] args) {
 		Injector injector = Injector.getContext("main")

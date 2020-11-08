@@ -8,7 +8,6 @@ public class DiExampleApplication {
 
 	public static void main(String[] args) {
 		Injector injector = Injector.getContext("main")
-			.setLogger(null) // disable logging
 			.defineConstruction(ProductService.class, ProductServiceImpl::new)
 			.makeBeans(MyController.class);
 
