@@ -30,6 +30,6 @@ public class _LogBindingAdapterDebug extends LogBindingAdapter {
 				adapterBeginFound = true;
 			}
 		}
-		return stackTrace[1];
+		throw new IllegalStateException(stackTrace.toString());
 	}
 }

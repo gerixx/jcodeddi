@@ -8,6 +8,7 @@ import coded.dependency.injection.Dependency;
 import coded.dependency.injection.Dependent;
 import coded.dependency.injection.Injector;
 import coded.dependency.injection.Lifecycle;
+import coded.dependency.injection.LogBindingAdapter;
 import coded.dependency.injection.LogBindingInterface;
 
 public interface _WiringInterface {
@@ -19,7 +20,8 @@ public interface _WiringInterface {
 
 	/**
 	 * Set your own log target by implementing {@link LogBindingInterface}. Default
-	 * log target is System.out. Set null to disable logs.
+	 * implementation is {@link LogBindingAdapter} writing logs to
+	 * {@link System#out}. Set logger to null to disable log outputs.
 	 */
 	_WiringInterface setLogger(LogBindingInterface logger);
 

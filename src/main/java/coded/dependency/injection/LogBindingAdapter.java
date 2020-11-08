@@ -5,10 +5,20 @@ import java.io.StringWriter;
 import java.util.Date;
 import java.util.function.Supplier;
 
+/**
+ * Default log implementation, see {@link LogBindingInterface}.
+ *
+ */
 public class LogBindingAdapter implements LogBindingInterface {
 
 	private PrintWriter out;
 
+	/**
+	 * Override this to customize the log output stream. Default used by
+	 * {@link Injector} is {@link System#out}.
+	 * 
+	 * @param out log outputs target
+	 */
 	public LogBindingAdapter(PrintWriter out) {
 		this.out = out;
 	}
