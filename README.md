@@ -1,9 +1,11 @@
 # Coded Dependency Injection
 
-Can be used if reflection and annotation processing is not allowed or possible, the memory footprint is also very very low.
-Minimum Java version is 8, recommended is version 11+.
+Can be used if reflection and annotation processing is not allowed or possible.
+Minimum Java version is 8. 
+Useful with Java compact profiles or for Java SE Embedded projects. 
+Also injectors in a server session context are supported, e.g., for Servlets.
 
-For example A depends on B and C. `Injector` is the dependency injector provider, beans are always referenced by their classes:
+For example A depends on B and C:
 
 ```
 A -> B, C
@@ -30,15 +32,18 @@ Injector.getContext("myapp")	// creates a named dependency injector
 
 ## Proxy Based Injection
 
-A dependency injector named 'myapp' is created with `Injector.getContext("myapp")`.
+An application context is represented by a named `Injection` instance.
+The dependency injector named 'myapp' is created with `Injector.getContext("myapp")`. 
+Beans of an application context are always referenced by their classes.
 The 'magic' happens when a bean like `A` is instantiated by the injector, then also its `Dependency` objects are instantiated.
 Every `Dependency` object instantiates the referenced service bean and stores it, this results in a cascading creation of the complete dependency tree with root bean `A` when executing `...makeBeans(A.class)`. 
+
 
 `Dependency<B> b` acts as a proxy and returns with `b.get()` the service bean `B`.
 The `Dependency` constructor requires as first argument the client bean as type of the interface `Dependent`, 
 and second the service class.
 
-`Injector#makeBeans(clz)` creates the dependency tree and starts top down instantiation of all beans beginning with `clz`.
+`Injector#makeBeans(clz)` creates the dependency tree and starts recursive instantiation of all beans beginning with `clz`.
 
 When using the `Injector` API every bean can be addressed by its class. For example to retrieve bean `A` use 
 `Injector.getContext("myapp").getBean(A.class);`.
@@ -48,8 +53,8 @@ When using the `Injector` API every bean can be addressed by its class. For exam
 Lambdas can be used for construction and the lifecycle of beans.
 
 An optional bean construction `Supplier` can be defined for its class or interface (see also JUnit tests with interfaces).
-With that no reflection is needed to create objects. 
-If not defined, default constructors are used for creating beans (`Class#newInstance()`).
+With that no reflection is needed to create objects. Java compact profiles can omit reflection, in that case for every bean a construction supplier has to be defined, see also [JCP](https://www.oracle.com/java/technologies/javase-embedded/compact-profiles-overview.html).
+If not defined, default constructors are used for creating beans using `Class#newInstance()`. 
 
 Example:
 
@@ -65,6 +70,13 @@ Injector.getContext("myapp")
 
 Classes are treated as singleton beans within the scope of a named dependency injector. 
 That means for every class one object is created within an `Injector` context.
+For example with `A -> B` and `A2 -> B`, the 3 instances `A, B, A2` would be created by:
+
+```Java
+Injector.getContext("app")
+	.makeBeans(A.class)
+	.makeBeans(A2.class);
+```
 
 Optionally the basic lifecycle of beans can be controlled by `Injector#start()` and `Injector#stop()`.
 With that the injector invokes the start/stop consumer of a bean if it was defined by `Injector#defineStart()`
@@ -83,7 +95,7 @@ Individual consumers for starting beans can be defined.
 
 Individual consumers for stopping beans can be defined.
 
-Multiple independent injector instances (Injector contexts) are possible.
+Multiple independent injector instances (application contexts), e.g., for Servlet sessions, are possible.
 
 Cyclic dependencies are prohibited.
 
@@ -97,8 +109,7 @@ Supports only field injection.
 
 ## Lifecycle of Beans
 
-MyApp > MyService
-
+For example: `MyApp -> MyService`
 
 ```Java
 interface MyApp extends Dependent, Lifecycle {

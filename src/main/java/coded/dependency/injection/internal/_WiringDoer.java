@@ -32,7 +32,7 @@ public class _WiringDoer implements _WiringInterface {
 	private final Map<String, Consumer<?>> objectStopMap = new HashMap<>();
 	private final Map<String, Consumer<?>> objectStartMap = new HashMap<>();
 	private final Set<String> objectCreationPending = new HashSet<>();
-	private final List<String> connectAllList = new ArrayList<>();
+	private final List<String> makeBeansList = new ArrayList<>();
 	private final String contextName;
 	private final _WiringHelper helper;
 
@@ -133,7 +133,7 @@ public class _WiringDoer implements _WiringInterface {
 		StopWatch start = StopWatch.start();
 		try {
 			getOrCreateObject(classDependent);
-			connectAllList.add(classDependent.getName());
+			makeBeansList.add(classDependent.getName());
 		} catch (BeanOutOfContextCreationException | CyclicDependencyException | ConstructionMissingException
 				| DependencyCreationException e) {
 			throw e;
@@ -152,12 +152,12 @@ public class _WiringDoer implements _WiringInterface {
 
 	@Override
 	public _WiringInterface start() {
-		if (connectAllList.isEmpty()) {
+		if (makeBeansList.isEmpty()) {
 			helper.logerror(_WiringDoer.class, () -> "No class injection done yet, see .makeBeans(...).");
 		} else {
 			helper.loginfo(_WiringDoer.class, () -> "Start beans...");
 			StopWatch start = StopWatch.start();
-			connectAllList.forEach(name -> {
+			makeBeansList.forEach(name -> {
 				Dependent object = (Dependent) objectMap.get(name);
 				startDependencies(helper, name, object);
 			});
@@ -192,7 +192,7 @@ public class _WiringDoer implements _WiringInterface {
 	public _WiringInterface stop() {
 		helper.loginfo(_WiringDoer.class, () -> "Stop beans...");
 		StopWatch start = StopWatch.start();
-		connectAllList.forEach(name -> {
+		makeBeansList.forEach(name -> {
 			Dependent object = (Dependent) objectMap.get(name);
 			stopDependencies(helper, name, object);
 		});
@@ -242,7 +242,7 @@ public class _WiringDoer implements _WiringInterface {
 
 	@Override
 	public void print(PrintStream out) {
-		connectAllList.forEach(name -> {
+		makeBeansList.forEach(name -> {
 			Object object = objectMap.get(name);
 			if (object instanceof Dependent) {
 				String depName = _WiringHelper.getPrintName(name, object);
@@ -251,6 +251,7 @@ public class _WiringDoer implements _WiringInterface {
 				traversedObjects.add(name);
 				printDependencies(out, helper, (Dependent) object);
 			}
+			traversedObjects.clear();
 		});
 	}
 
@@ -335,7 +336,7 @@ public class _WiringDoer implements _WiringInterface {
 	}
 
 	/**
-	 * Clears all contexts.
+	 * Clears all injectors.
 	 */
 	public static void removeAll() {
 		wiringContextMap.clear();

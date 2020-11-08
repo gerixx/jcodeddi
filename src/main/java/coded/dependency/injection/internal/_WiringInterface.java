@@ -14,7 +14,7 @@ import coded.dependency.injection.LogBindingInterface;
 public interface _WiringInterface {
 
 	/**
-	 * @return context name
+	 * @return application context (injector) name
 	 */
 	String getName();
 
@@ -59,8 +59,8 @@ public interface _WiringInterface {
 	 * Creates dependency objects (the beans) and wires them up recursively. Defined
 	 * construction supplier or no-argument constructors are invoked to create beans
 	 * if not created yet, see also {@link #defineConstruction(Class, Supplier)}.
-	 * Beans are treated as 'singletons' within the injector context. Multiple
-	 * connects of classes are ignored.
+	 * Beans are treated as 'singletons' within an injector. Multiple connects of
+	 * classes are ignored.
 	 * 
 	 * @param <T>
 	 * @param classDependent class to begin with recursive wiring
@@ -107,10 +107,12 @@ public interface _WiringInterface {
 	void print(PrintStream out);
 
 	/**
-	 * Removes this injector context from injection manage. Can be used to free
-	 * internal memory if an injector is not needed anymore. Use this carefully!
-	 * After removal {@link Injector#getContext(String)} with name of this instance
-	 * would create a new injector context.
+	 * Removes this application context (injector instance) from the injector
+	 * provider. Can be used to free internal memory if an injector is not needed
+	 * anymore, for example when using an injector in a Servlet session and it is
+	 * released. Use this carefully! After removal, invocation of
+	 * {@link Injector#getContext(String)} with the same context name would create a
+	 * new injector instance.
 	 */
 	void remove();
 }

@@ -111,9 +111,9 @@ public class Injector implements _WiringInterface {
 	}
 
 	/**
-	 * Removes all injector contexts of the injection management. Can be used to
-	 * free all internally used memory. Use this carefully!
-	 * {@link #getContext(String)} would create new injector instance for a
+	 * Removes all injectors from the injection provider. Can be used to free all
+	 * internally used memory. Use this carefully! Every subsequent invocation
+	 * {@link #getContext(String)} would create a new injector instance, also for a
 	 * previously used context name.
 	 */
 	public static void removeAll() {

@@ -19,6 +19,7 @@ import coded.dependency.injection.exception.DependencyCreationException;
 import coded.dependency.injection.internal._LogBindingAdapterDebug;
 import coded.dependency.injection.internal._WiringHelper;
 import coded.dependency.injection.internal.fortest.A;
+import coded.dependency.injection.internal.fortest.A2;
 import coded.dependency.injection.internal.fortest.B;
 import coded.dependency.injection.internal.fortest.C;
 import coded.dependency.injection.internal.fortest.D;
@@ -60,6 +61,38 @@ public class InjectionTest {
 		assertTrue(injector.getBean(C.class) == c);
 
 		injector.print();
+	}
+
+	private int newCntB = 0, newCntC = 0, newCntD = 0;
+
+	/**
+	 * A -> B, C and A2 -> B, C and C -> D
+	 */
+	@Test
+	public void testMultipleServiceBeanDependencies() {
+		Injector.getContext("multi")
+			.defineConstruction(B.class, () -> {
+				newCntB++;
+				return new B();
+			})
+			.defineConstruction(C.class, () -> {
+				newCntC++;
+				return new C();
+			})
+			.defineConstruction(D.class, () -> {
+				newCntD++;
+				return new D();
+			})
+			.makeBeans(A.class)
+			.makeBeans(A2.class);
+
+		Injector.getContext("multi")
+			.print();
+
+		// then
+		assertEquals(1, newCntB);
+		assertEquals(1, newCntC);
+		assertEquals(1, newCntD);
 	}
 
 	@Test
@@ -212,7 +245,7 @@ public class InjectionTest {
 		assertEquals(injector.getName(), injector2.getName());
 		assertNull(injector2.getBean(MyServiceInterface.class));
 
-		// reference 'injector' is still working but injection management does not refer
+		// reference 'injector' is still working but injection provider does not refer
 		// it anymore, it could be garbage collected
 		injector.start();
 		validateStartStopWorks(injector);
