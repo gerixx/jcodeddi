@@ -97,14 +97,14 @@ public interface _WiringInterface {
 	/**
 	 * Prints the dependency tree(s) to System.out.
 	 */
-	void print();
+	_WiringInterface print();
 
 	/**
 	 * Print the dependency tree(s) to the given PrintWriter.
 	 * 
 	 * @param out
 	 */
-	void print(PrintStream out);
+	_WiringInterface print(PrintStream out);
 
 	/**
 	 * Removes this application context (injector instance) from the injector
@@ -114,5 +114,5 @@ public interface _WiringInterface {
 	 * {@link Injector#getContext(String)} with the same context name would create a
 	 * new injector instance.
 	 */
-	void remove();
+	_WiringInterface remove();
 }

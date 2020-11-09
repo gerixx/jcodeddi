@@ -96,18 +96,21 @@ public class Injector implements _WiringInterface {
 	}
 
 	@Override
-	public void print() {
+	public Injector print() {
 		delegate.print();
+		return this;
 	}
 
 	@Override
-	public void print(PrintStream out) {
+	public Injector print(PrintStream out) {
 		delegate.print(out);
+		return this;
 	}
 
 	@Override
-	public void remove() {
+	public Injector remove() {
 		delegate.remove();
+		return this;
 	}
 
 	/**

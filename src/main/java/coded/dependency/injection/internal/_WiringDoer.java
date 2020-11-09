@@ -232,8 +232,9 @@ public class _WiringDoer implements _WiringInterface {
 	}
 
 	@Override
-	public void print() {
+	public _WiringInterface print() {
 		print(System.out);
+		return this;
 	}
 
 	// A -> B
@@ -241,7 +242,7 @@ public class _WiringDoer implements _WiringInterface {
 	private Set<String> traversedObjects = new HashSet<>();
 
 	@Override
-	public void print(PrintStream out) {
+	public _WiringInterface print(PrintStream out) {
 		makeBeansList.forEach(name -> {
 			Object object = objectMap.get(name);
 			if (object instanceof Dependent) {
@@ -253,6 +254,7 @@ public class _WiringDoer implements _WiringInterface {
 			}
 			traversedObjects.clear();
 		});
+		return this;
 	}
 
 	private void printDependencies(PrintStream out, _WiringHelper helper, Dependent object) {
@@ -344,9 +346,10 @@ public class _WiringDoer implements _WiringInterface {
 	}
 
 	@Override
-	public void remove() {
+	public _WiringInterface remove() {
 		wiringContextMap.remove(contextName);
 		helper.remove();
+		return this;
 	}
 
 }
