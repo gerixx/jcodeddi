@@ -25,7 +25,7 @@
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <includeEmptyDirs>false</includeEmptyDirs>
-          <finalName>jcodeddi-1.0</finalName>
+          <finalName>jcodeddi-1.0.1</finalName>
         </configuration>
       </plugin>
     </plugins>
