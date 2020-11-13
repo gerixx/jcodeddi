@@ -45,8 +45,9 @@ public class Dependency<T> {
 		} catch (BeanOutOfContextCreationException e) {
 			throw new BeanOutOfContextCreationException("injection error: " + getInjectionInfo(d)
 					+ " - two possible reasons: (1) the bean is not created by the injector or "
-					+ "(2) the bean is not created in the injector thread.");
+					+ "(2) the bean is not created within the injector thread.");
 		} catch (CyclicDependencyException | ConstructionMissingException | DependencyCreationException e) {
+			helper.logerror(Dependency.class, () -> e.getMessage());
 			throw e;
 		} catch (Exception e) {
 			if (_WiringHelper.isCauseKnownRuntimeException(e)) {

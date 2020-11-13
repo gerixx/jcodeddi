@@ -96,7 +96,7 @@ public class _WiringHelper {
 		}
 	}
 
-	public void logerror(Class<_WiringDoer> clz, Supplier<String> msg) {
+	public void logerror(Class<?> clz, Supplier<String> msg) {
 		if (logger != null) {
 			logger.error(contextName, new Throwable().getStackTrace(), msg);
 		}
