@@ -16,8 +16,10 @@ class B {
 	B(int arg1, int arg2) {...}
 	void foo() {...}
 }
+
 class C {
 }
+
 class A implements Dependent {
 	Dependency<B> b = new Dependency<>(this, B.class);
 	Dependency<C> c = new Dependency<>(this, C.class);
