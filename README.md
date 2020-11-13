@@ -37,15 +37,15 @@ Injector.getContext("myapp")	// creates a named dependency injector
 An application context is represented by a named `Injection` instance.
 The dependency injector named 'myapp' is created with `Injector.getContext("myapp")`. 
 Beans of an application context are always referenced by their classes.
-The 'magic' happens when a bean like `A` is instantiated by the injector, then also its `Dependency` objects are instantiated.
-Every `Dependency` object instantiates the referenced service bean and stores it, this results in a cascading creation of the complete dependency tree with root bean `A` when executing `...makeBeans(A.class)`. 
-
+Its `Dependency` members are the deputies for the referred service beans during compilation.
+The 'magic' happens when a bean like `A` is instantiated by the injector, then also its `Dependency` fields are instantiated.
+Every `Dependency` object instantiates the referenced service bean and stores it, this results in a cascading creation of the complete dependency graph with root bean `A` when executing `...makeBeans(A.class)`. 
 
 `Dependency<B> b` acts as a proxy and returns with `b.get()` the service bean `B`.
 The `Dependency` constructor requires as first argument the client bean as type of the interface `Dependent`, 
 and second the service class.
 
-`Injector#makeBeans(clz)` creates the dependency tree and starts recursive instantiation of all beans beginning with `clz`.
+`Injector#makeBeans(clz)` creates the dependency graph and starts recursive instantiation of all beans beginning with `clz`.
 
 When using the `Injector` API every bean can be addressed by its class. For example to retrieve bean `A` use 
 `Injector.getContext("myapp").getBean(A.class);`.
@@ -89,6 +89,10 @@ Alternatively the interface `Lifecycle` can be implemented, see also "Lifecycle"
 
 It is light weight, fast, debugable and transparent.
 
+Cyclic dependencies are prohibited.
+
+Type safety when retrieving beans from the injection context.
+
 Dependency graph is printable.
 
 Individual construction suppliers for instance creation can be defined.
@@ -99,13 +103,11 @@ Individual consumers for stopping beans can be defined.
 
 Multiple independent injector instances (application contexts), e.g., for Servlet sessions, are possible.
 
-Cyclic dependencies are prohibited.
-
-No casts needed when using beans.
-
 ## Limitations
 
 Supports only field injection.
+
+As the system configuration is coded, it cannot be changed without compilation.
 
 # Examples
 
