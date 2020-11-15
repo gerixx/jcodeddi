@@ -67,10 +67,13 @@ public class _WiringDoer implements _WiringInterface {
 	 * @return the injector
 	 */
 	public static _WiringInterface getContext(String contextName) {
-		if (!wiringContextMap.containsKey(contextName)) {
-			wiringContextMap.put(contextName, new _WiringDoer(contextName));
+		_WiringDoer wiring = wiringContextMap.get(contextName);
+		if (wiring == null) {
+			synchronized (wiringContextMap) {
+				return wiringContextMap.computeIfAbsent(contextName, k -> new _WiringDoer(k));
+			}
 		}
-		return wiringContextMap.get(contextName);
+		return wiring;
 	}
 
 	public static String[] getContextNames() {
@@ -341,15 +344,19 @@ public class _WiringDoer implements _WiringInterface {
 	 * Clears all injectors.
 	 */
 	public static void removeAll() {
-		wiringContextMap.clear();
-		_WiringHelper.restAll();
+		synchronized (wiringContextMap) {
+			wiringContextMap.clear();
+			_WiringHelper.restAll();
+		}
 	}
 
 	@Override
 	public _WiringInterface remove() {
-		wiringContextMap.remove(contextName);
-		helper.remove();
-		return this;
+		synchronized (wiringContextMap) {
+			wiringContextMap.remove(contextName);
+			helper.remove();
+			return this;
+		}
 	}
 
 }
