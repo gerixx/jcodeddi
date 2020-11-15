@@ -37,26 +37,28 @@ Injector.getContext("myapp")	// creates a named dependency injector
 An application context is represented by a named `Injection` instance.
 The dependency injector named 'myapp' is created with `Injector.getContext("myapp")`. 
 Beans of an application context are always referenced by their classes.
-Its `Dependency` members are the deputies for the referred service beans during compilation.
-The 'magic' happens when a bean like `A` is instantiated by the injector, then also its `Dependency` fields are instantiated.
-Every `Dependency` object instantiates the referenced service bean and stores it, this results in a cascading creation of the complete dependency graph with root bean `A` when executing `...makeBeans(A.class)`. 
+  
+The setup of the graph and the implicit injection happens as soon as the client bean `A` (see above) is instantiated by the injector.
+The constructor of `A` instantiates its `Dependency` members `b, c`, which act as a proxy to the service bean. 
+With that `Dependency<B> b` returns with `b.get()` the service bean object of type `B`.
 
-`Dependency<B> b` acts as a proxy and returns with `b.get()` the service bean `B`.
-The `Dependency` constructor requires as first argument the client bean as type of the interface `Dependent`, 
-and second the service class.
+The `Dependency` constructor expects as first argument the client bean as type of the interface `Dependent`, 
+it is internally used to track the dependencies of every bean. 
+Second constructor argument is the class of the service bean, it is used to retrieve the service bean from the injector. 
+Every service bean in turn can implement interface `Dependent` and declaring `Dependency` members and so forth.  
+This results in a cascading creation of the complete dependency graph with root bean `A` when `Injector.getContext("myapp").makeBeans(A.class)` is executed, see also [Wikipedia: Dependency Injection](https://en.wikipedia.org/wiki/Dependency_injection).
 
-`Injector#makeBeans(clz)` creates the dependency graph and starts recursive instantiation of all beans beginning with `clz`.
-
-When using the `Injector` API every bean can be addressed by its class. For example to retrieve bean `A` use 
+Within the `Injector` is every bean identified by its class. For example to retrieve bean `A` use  
 `Injector.getContext("myapp").getBean(A.class);`.
 
 ## IoC
 
 Lambdas can be used for construction and the lifecycle of beans.
 
-An optional bean construction `Supplier` can be defined for its class or interface (see also JUnit tests with interfaces).
-With that no reflection is needed to create objects. Java compact profiles can omit reflection, in that case for every bean a construction supplier has to be defined, see also [JCP](https://www.oracle.com/java/technologies/javase-embedded/compact-profiles-overview.html).
-If not defined, default constructors are used for creating beans using `Class#newInstance()`. 
+An optional bean construction `Supplier` can be defined for its class or interface (see also [lifecycle](#lifecycle-of-beans) example).
+With that no reflection is needed to create objects. For example Java compact profiles can omit reflection completely, 
+in that case for every bean a construction supplier has to be defined, see also [JCP](https://www.oracle.com/java/technologies/javase-embedded/compact-profiles-overview.html).
+If not defined, the default constructor of a bean is invoked using `Class#newInstance()`. 
 
 Example:
 
@@ -78,12 +80,16 @@ For example with `A -> B` and `A2 -> B`, the 3 instances `A, B, A2` would be cre
 Injector.getContext("app")
 	.makeBeans(A.class)
 	.makeBeans(A2.class);
+	
+A a = Injector.getContext("app").getBean(A.class);
+A2 a2 = Injector.getContext("app").getBean(A2.class);
+B b = Injector.getContext("app").getBean(B.class);
 ```
 
 Optionally the basic lifecycle of beans can be controlled by `Injector#start()` and `Injector#stop()`.
 With that the injector invokes the start/stop consumer of a bean if it was defined by `Injector#defineStart()`
 `Injector#defineStop()`. 
-Alternatively the interface `Lifecycle` can be implemented, see also "Lifecycle" example below.
+Alternatively the interface `Lifecycle` can be implemented, see also the [lifecycle](#lifecycle-of-beans) example below.
 
 ## Features
 
