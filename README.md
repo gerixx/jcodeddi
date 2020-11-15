@@ -209,11 +209,11 @@ assertFalse(injector.getBean(MyService.class)
 
 ## springframework.guru Example
 
-See `coded.dependency.ijection.example.springfw.guru.DiExampleApplication`, ported from 
+See `coded.dependency.injection.example.springfw.guru.DiExampleApplication`, ported from 
 [springframework.guru](https://springframework.guru/dependency-injection-example-using-spring/).
 
 
 ## vogella.com Example
 
-See `coded.dependency.ijection.example.vogella.Main`, ported from
+See `coded.dependency.injection.example.vogella.Main`, ported from
 [vogella.com](https://www.vogella.com/tutorials/SpringDependencyInjection/article.html)
