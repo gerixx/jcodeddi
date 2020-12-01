@@ -1,5 +1,6 @@
 package coded.dependency.injection;
 
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
@@ -15,5 +16,10 @@ public class TestBase {
 					.getName(), description.getMethodName());
 			}
 		};
+
+	@After
+	public void after() {
+		Injector.removeAll();
+	}
 
 }

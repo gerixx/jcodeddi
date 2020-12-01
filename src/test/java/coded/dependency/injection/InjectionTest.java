@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.junit.After;
 import org.junit.Test;
 
 import coded.dependency.injection.exception.BeanOutOfContextCreationException;
@@ -29,11 +28,6 @@ import coded.dependency.injection.internal.fortest.MyServiceImplementation;
 import coded.dependency.injection.internal.fortest.MyServiceInterface;
 
 public class InjectionTest extends TestBase {
-
-	@After
-	public void after() {
-		Injector.removeAll();
-	}
 
 	/**
 	 * Connect beans: <br>

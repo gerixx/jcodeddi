@@ -51,7 +51,9 @@ public class LogBindingAdapter implements LogBindingInterface {
 		return elem.getClassName()
 			.endsWith("Test")
 				|| elem.getClassName()
-					.contains(".fortest.");
+					.contains(".fortest.")
+				|| elem.getClassName()
+					.contains(".example.");
 	}
 
 	@Override
@@ -73,7 +75,7 @@ public class LogBindingAdapter implements LogBindingInterface {
 		print("INFO", contextName, stackTraceElement.getFileName(), stackTraceElement.getLineNumber(), msgSupplier);
 	}
 
-	private void print(String level, String contextName, String fileName, int lineNumber,
+	protected void print(String level, String contextName, String fileName, int lineNumber,
 			Supplier<String> msgSupplier) {
 		out.printf("%s [%s] injector '%s': %s - thread: %s (%s:%d)%n", new Date(), level, contextName,
 				msgSupplier.get(), Thread.currentThread()
@@ -82,7 +84,7 @@ public class LogBindingAdapter implements LogBindingInterface {
 		out.flush();
 	}
 
-	private String throwableToString(Throwable t) {
+	protected String throwableToString(Throwable t) {
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw, true);
 		t.printStackTrace(pw);
