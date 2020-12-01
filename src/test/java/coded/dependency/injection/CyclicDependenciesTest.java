@@ -2,17 +2,16 @@ package coded.dependency.injection;
 
 import org.junit.Test;
 
-import coded.dependency.injection.Injector;
 import coded.dependency.injection.exception.CyclicDependencyException;
 import coded.dependency.injection.internal.fortest.AtoB;
 import coded.dependency.injection.internal.fortest.BtoA;
 import coded.dependency.injection.internal.fortest.MainWithCycle;
-import coded.dependency.injection.internal.fortest.MyApplicationInterface;
 import coded.dependency.injection.internal.fortest.MyAppToService;
+import coded.dependency.injection.internal.fortest.MyApplicationInterface;
 import coded.dependency.injection.internal.fortest.MyServiceInterface;
 import coded.dependency.injection.internal.fortest.MyServiceToApp;
 
-public class CyclicDependenciesTest {
+public class CyclicDependenciesTest extends TestBase {
 
 	@Test(expected = CyclicDependencyException.class)
 	public void testBidirectionalDependency() throws Exception {

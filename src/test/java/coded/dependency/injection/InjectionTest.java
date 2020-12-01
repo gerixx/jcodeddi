@@ -28,7 +28,7 @@ import coded.dependency.injection.internal.fortest.MyApplicationInterface;
 import coded.dependency.injection.internal.fortest.MyServiceImplementation;
 import coded.dependency.injection.internal.fortest.MyServiceInterface;
 
-public class InjectionTest {
+public class InjectionTest extends TestBase {
 
 	@After
 	public void after() {

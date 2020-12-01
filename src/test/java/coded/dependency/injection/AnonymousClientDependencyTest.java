@@ -14,7 +14,7 @@ import coded.dependency.injection.internal.fortest.MyAnonymousApp;
 import coded.dependency.injection.internal.fortest.MyAnonymousContextConflict_1;
 import coded.dependency.injection.internal.fortest.MyAnonymousContextConflict_2;
 
-public class AnonymousClientDependencyTest {
+public class AnonymousClientDependencyTest extends TestBase {
 
 	@Test
 	public void testAnonymousClient() {

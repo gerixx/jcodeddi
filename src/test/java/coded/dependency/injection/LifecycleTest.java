@@ -5,7 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-public class LifecycleTest {
+public class LifecycleTest extends TestBase {
 
 	@Test
 	public void test() throws Exception {
