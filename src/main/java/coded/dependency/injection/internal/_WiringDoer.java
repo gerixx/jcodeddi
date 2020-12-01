@@ -19,10 +19,11 @@ import coded.dependency.injection.Lifecycle;
 import coded.dependency.injection.LogBindingAdapter;
 import coded.dependency.injection.LogBindingInterface;
 import coded.dependency.injection.exception.BeanOutOfContextCreationException;
-import coded.dependency.injection.exception.ConnectAllException;
 import coded.dependency.injection.exception.ConstructionMissingException;
+import coded.dependency.injection.exception.ContextMismatchException;
 import coded.dependency.injection.exception.CyclicDependencyException;
 import coded.dependency.injection.exception.DependencyCreationException;
+import coded.dependency.injection.exception.MakeBeansException;
 
 public class _WiringDoer implements _WiringInterface {
 
@@ -66,7 +67,10 @@ public class _WiringDoer implements _WiringInterface {
 	 * 
 	 * @return the injector
 	 */
-	public static _WiringInterface getContext(String contextName) {
+	public static _WiringInterface getOrCreateContext(String contextName) {
+		if (contextName == null) {
+			throw new IllegalArgumentException("contextName must not be NULL");
+		}
 		_WiringDoer wiring = wiringContextMap.get(contextName);
 		if (wiring == null) {
 			synchronized (wiringContextMap) {
@@ -135,16 +139,17 @@ public class _WiringDoer implements _WiringInterface {
 				() -> "Make beans for dependent " + _WiringHelper.getPrintNameOfClass(classDependent) + " ...");
 		StopWatch start = StopWatch.start();
 		try {
-			getOrCreateObject(classDependent);
+			getOrCreateObjectImpl(classDependent);
 			makeBeansList.add(classDependent.getName());
-		} catch (BeanOutOfContextCreationException | CyclicDependencyException | ConstructionMissingException
-				| DependencyCreationException e) {
+		} catch (ContextMismatchException | BeanOutOfContextCreationException | CyclicDependencyException
+				| ConstructionMissingException | DependencyCreationException e) {
+//			helper.logerror(_WiringDoer.class, () -> e.getMessage());
 			throw e;
 		} catch (Exception e) {
 			if (_WiringHelper.isCauseKnownRuntimeException(e)) {
 				throw (RuntimeException) e.getCause();
 			} else {
-				throw new ConnectAllException(e);
+				throw new MakeBeansException(e);
 			}
 		} finally {
 			_WiringHelper.resetContext();
@@ -292,7 +297,7 @@ public class _WiringDoer implements _WiringInterface {
 		return (T) objectMap.get(name);
 	}
 
-	public Object getOrCreateObject(Class<?> clz) throws Exception {
+	private Object getOrCreateObjectImpl(Class<?> clz) throws Exception {
 		String name = clz.getName();
 		if (!objectMap.containsKey(name)) {
 			objectCreationPending.add(name);
@@ -324,20 +329,19 @@ public class _WiringDoer implements _WiringInterface {
 		}
 		handleRecursiveDependencies(name);
 		return objectMap.get(name);
-
 	}
 
 	private void handleRecursiveDependencies(String name) {
 		objectCreationPending.remove(name);
 	}
 
-	public <T> Object getOrCreateObject(Dependency<T> dependency, Class<?> targetClass) throws Exception {
+	public <T> Object getOrCreateObject(Class<?> targetClass) throws Exception {
 		if (objectCreationPending.contains(targetClass.getName())) {
 			// TODO track dependent and log it
 			throw new CyclicDependencyException(
 					"Cyclic dependency to " + _WiringHelper.getPrintNameOfClass(targetClass));
 		}
-		return getOrCreateObject(targetClass);
+		return getOrCreateObjectImpl(targetClass);
 	}
 
 	/**

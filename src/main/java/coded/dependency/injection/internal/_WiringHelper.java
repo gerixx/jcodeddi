@@ -11,6 +11,7 @@ import coded.dependency.injection.Dependent;
 import coded.dependency.injection.LogBindingInterface;
 import coded.dependency.injection.exception.BeanOutOfContextCreationException;
 import coded.dependency.injection.exception.ConstructionMissingException;
+import coded.dependency.injection.exception.ContextMismatchException;
 import coded.dependency.injection.exception.CyclicDependencyException;
 import coded.dependency.injection.exception.DependencyCreationException;
 
@@ -27,6 +28,12 @@ public class _WiringHelper {
 	private LogBindingInterface logger;
 
 	public static _WiringHelper setContext(String ctx) {
+		String contextName = threadContext.get();
+		if (contextName != null && !ctx.equals(contextName)) {
+			throw new ContextMismatchException(String.format(
+					"Initialization of context '%s' is not finisihed. New context '%s' cannot be created.", contextName,
+					ctx));
+		}
 		_WiringHelper.threadContext.set(ctx);
 		return getContext(ctx);
 	}
@@ -82,8 +89,12 @@ public class _WiringHelper {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T getObject(Dependency<T> dependency, Class<T> targetClass) throws Exception {
-		return (T) ((_WiringDoer) _WiringDoer.getContext(contextName)).getOrCreateObject(dependency, targetClass);
+	public <T> T getObject(Class<T> targetClass) throws Exception {
+		return (T) ((_WiringDoer) _WiringDoer.getOrCreateContext(contextName)).getOrCreateObject(targetClass);
+	}
+
+	public static <T> T getObject(String contextName, Class<T> targetClass) throws Exception {
+		return null;
 	}
 
 	public void setLogger(LogBindingInterface logger) {
@@ -132,8 +143,8 @@ public class _WiringHelper {
 	public static boolean isCauseKnownRuntimeException(Exception e) {
 		Throwable cause = e.getCause();
 		return cause != null && cause instanceof RuntimeException
-				&& (cause instanceof BeanOutOfContextCreationException || cause instanceof CyclicDependencyException
-						|| cause instanceof ConstructionMissingException
+				&& (cause instanceof ContextMismatchException || cause instanceof BeanOutOfContextCreationException
+						|| cause instanceof CyclicDependencyException || cause instanceof ConstructionMissingException
 						|| cause instanceof DependencyCreationException);
 	}
 

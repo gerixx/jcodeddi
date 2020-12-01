@@ -29,22 +29,34 @@ public class LogBindingAdapter implements LogBindingInterface {
 	 * @param stackTrace
 	 * @return stack trace element using the current injection API
 	 */
-	protected StackTraceElement getStackTraceElement(StackTraceElement[] stackTrace) {
+	protected StackTraceElement findUserCodeStackTraceElement(StackTraceElement[] stackTrace) {
+		boolean injectionStackBegin = false;
 		for (int i = 0; i < stackTrace.length; i++) {
 			StackTraceElement elem = stackTrace[i];
-			if (elem.getClassName()
-				.equals(Injector.class.getName())
-					|| elem.getClassName()
-						.equals(Dependency.class.getName())) {
-				return stackTrace[i + 1];
+			if (!injectionStackBegin && elem.getClassName()
+				.equals(Injector.class.getName()) || elem.getClassName()
+					.equals(Dependency.class.getName())) {
+				injectionStackBegin = true;
+			}
+			if (injectionStackBegin && (!elem.getClassName()
+				.startsWith(Injector.class.getPackageName()) || isInjectionTest(elem))) {
+				return elem;
 			}
 		}
 		return stackTrace[1];
+
+	}
+
+	private boolean isInjectionTest(StackTraceElement elem) {
+		return elem.getClassName()
+			.endsWith("Test")
+				|| elem.getClassName()
+					.contains(".fortest.");
 	}
 
 	@Override
 	public void error(String contextName, StackTraceElement[] stack, Supplier<String> msgSupplier) {
-		StackTraceElement stackTraceElement = getStackTraceElement(new Throwable().getStackTrace());
+		StackTraceElement stackTraceElement = findUserCodeStackTraceElement(new Throwable().getStackTrace());
 		print("ERROR", contextName, stackTraceElement.getFileName(), stackTraceElement.getLineNumber(), msgSupplier);
 	}
 
@@ -57,14 +69,14 @@ public class LogBindingAdapter implements LogBindingInterface {
 
 	@Override
 	public void info(String contextName, StackTraceElement[] stack, Supplier<String> msgSupplier) {
-		StackTraceElement stackTraceElement = getStackTraceElement(new Throwable().getStackTrace());
+		StackTraceElement stackTraceElement = findUserCodeStackTraceElement(new Throwable().getStackTrace());
 		print("INFO", contextName, stackTraceElement.getFileName(), stackTraceElement.getLineNumber(), msgSupplier);
 	}
 
 	private void print(String level, String contextName, String fileName, int lineNumber,
 			Supplier<String> msgSupplier) {
-		out.printf("%s [%s] injector '%s' %s - thread: %s (%s:%d)%n", new Date(), level, contextName, msgSupplier.get(),
-				Thread.currentThread()
+		out.printf("%s [%s] injector '%s': %s - thread: %s (%s:%d)%n", new Date(), level, contextName,
+				msgSupplier.get(), Thread.currentThread()
 					.getName(),
 				fileName, lineNumber);
 		out.flush();

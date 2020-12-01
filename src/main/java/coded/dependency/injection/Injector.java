@@ -30,7 +30,7 @@ public class Injector implements _WiringInterface {
 	 * @return the injector
 	 */
 	public static Injector getContext(String contextName) {
-		return new Injector(_WiringDoer.getContext(contextName));
+		return new Injector(_WiringDoer.getOrCreateContext(contextName));
 	}
 
 	public static String[] getContextNames() {

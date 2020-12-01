@@ -15,7 +15,7 @@ public class _LogBindingAdapterDebug extends LogBindingAdapter {
 	}
 
 	@Override
-	protected StackTraceElement getStackTraceElement(StackTraceElement[] stackTrace) {
+	protected StackTraceElement findUserCodeStackTraceElement(StackTraceElement[] stackTrace) {
 		boolean adapterBeginFound = false;
 		for (int i = 0; i < stackTrace.length; i++) {
 			StackTraceElement elem = stackTrace[i];
