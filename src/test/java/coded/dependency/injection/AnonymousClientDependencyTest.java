@@ -1,6 +1,7 @@
 package coded.dependency.injection;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -20,8 +21,8 @@ public class AnonymousClientDependencyTest extends TestBase {
 	public void testAnonymousClient() {
 		MyAnonymousApp app = new MyAnonymousApp();
 
-		Injector.getContext(MyAnonymousApp.APPCONTEXT)
-			.print();
+		assertNull(Injector.getContext(MyAnonymousApp.APPCONTEXT)
+			.getBean(MyAnonymousApp.class));
 
 		A a = app.a.get();
 		B b = a.b.get();
@@ -43,7 +44,12 @@ public class AnonymousClientDependencyTest extends TestBase {
 	}
 
 	@Test(expected = ContextMismatchException.class)
-	public void testContextConflictException_anonymousClient() {
+	public void testContextConflictException_anonymousClient_1() {
+		new MyAnonymousContextConflict_2();
+	}
+
+	@Test(expected = ContextMismatchException.class)
+	public void testContextConflictException_anonymousClient_2() {
 		Injector.getContext("app")
 			.makeBeans(MyAnonymousContextConflict_2.class);
 	}

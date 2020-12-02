@@ -115,6 +115,28 @@ Supports only field injection.
 
 As the system configuration is coded, it cannot be changed without compilation.
 
+## Anonymous Client
+
+A client bean that is instantiated by the application and not by the injector, can also use class `Dependency` to declare dependencies to service beans. For this an additional constructor declares the injection context. But, the client object is then unknown for the Injector, for example:
+
+```Java
+public class MyAnonymousApp implements Dependent {
+	Dependency<A> a = new Dependency<>("appcontext", this, A.class);
+}
+
+MyAnonymousApp app = new MyAnonymousApp(); // not instantiated by Injector
+
+assertNull(Injector.getContext("appcontext") // MyAnonymousApp is 'unknown' for the Injector
+	.getBean(MyAnonymousApp.class));
+
+A a = app.a.get(); // injection was done
+
+assertTrue(a == Injector.getContext("appcontext") // and A is 'known' for the Injector
+	.getBean(A.class));
+```
+
+This can be useful for interim migration steps. Recommended is to use non anonymous beans with `Injector#makeBeans()`.
+
 # Examples
 
 ## Lifecycle of Beans
