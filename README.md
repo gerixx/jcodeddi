@@ -44,7 +44,8 @@ With that `Dependency<B> b` returns with `b.get()` the service bean object of ty
 
 The `Dependency` constructor expects as first argument the client bean as type of the interface `Dependent`, 
 it is internally used to track the dependencies of every bean. 
-Second constructor argument is the class of the service bean, it is used to retrieve the service bean from the injector. 
+Second constructor argument is the class of the service bean, it is used to retrieve the service bean from the injector, 
+which constructs the bean if is not existing yet. 
 Every service bean in turn can implement interface `Dependent` and declaring `Dependency` members and so forth.  
 This results in a cascading creation of the complete dependency graph with root bean `A` when `Injector.getContext("myapp").makeBeans(A.class)` is executed, see also [Wikipedia: Dependency Injection](https://en.wikipedia.org/wiki/Dependency_injection).
 
