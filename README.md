@@ -110,6 +110,8 @@ Individual consumers for stopping beans can be defined.
 
 Multiple independent injector instances (application contexts), e.g., for Servlet sessions, are possible.
 
+Logs injection use in production code with class and line number.
+
 ## Limitations
 
 Supports only field injection.
