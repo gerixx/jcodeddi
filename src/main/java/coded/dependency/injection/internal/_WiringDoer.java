@@ -15,6 +15,7 @@ import java.util.function.Supplier;
 
 import coded.dependency.injection.Dependency;
 import coded.dependency.injection.Dependent;
+import coded.dependency.injection.Injector;
 import coded.dependency.injection.Lifecycle;
 import coded.dependency.injection.LogBindingAdapter;
 import coded.dependency.injection.LogBindingInterface;
@@ -25,7 +26,7 @@ import coded.dependency.injection.exception.CyclicDependencyException;
 import coded.dependency.injection.exception.DependencyCreationException;
 import coded.dependency.injection.exception.MakeBeansException;
 
-public class _WiringDoer implements _WiringInterface {
+public class _WiringDoer implements Injector {
 
 	private final static Map<String, _WiringDoer> wiringContextMap = new HashMap<>();
 	private final Map<String, Object> objectMap = new HashMap<>();
@@ -67,7 +68,7 @@ public class _WiringDoer implements _WiringInterface {
 	 * 
 	 * @return the injector
 	 */
-	public static _WiringInterface getOrCreateContext(String contextName) {
+	public static Injector getOrCreateContext(String contextName) {
 		if (contextName == null) {
 			throw new IllegalArgumentException("contextName must not be NULL");
 		}
@@ -91,28 +92,28 @@ public class _WiringDoer implements _WiringInterface {
 	}
 
 	@Override
-	public _WiringInterface setLogger(LogBindingInterface logger) {
+	public Injector setLogger(LogBindingInterface logger) {
 		helper.setLogger(logger);
 		return this;
 	}
 
 	@Override
-	public <T> _WiringInterface defineConstruction(Class<? super T> clz, Supplier<? super T> construction) {
+	public <T> Injector defineConstruction(Class<? super T> clz, Supplier<? super T> construction) {
 		return define(clz, construction, null, null);
 	}
 
 	@Override
-	public <T> _WiringInterface defineStart(Class<? super T> clz, Consumer<? super T> start) {
+	public <T> Injector defineStart(Class<? super T> clz, Consumer<? super T> start) {
 		return define(clz, null, start, null);
 	}
 
 	@Override
-	public <T> _WiringInterface defineStop(Class<? super T> clz, Consumer<? super T> stop) {
+	public <T> Injector defineStop(Class<? super T> clz, Consumer<? super T> stop) {
 		return define(clz, null, null, stop);
 	}
 
 	@Override
-	public <T> _WiringInterface defineStartStop(Class<? super T> clz, Consumer<? super T> start,
+	public <T> Injector defineStartStop(Class<? super T> clz, Consumer<? super T> start,
 			Consumer<? super T> stop) {
 		return define(clz, null, start, stop);
 	}
@@ -133,7 +134,7 @@ public class _WiringDoer implements _WiringInterface {
 	}
 
 	@Override
-	public <T extends Dependent> _WiringInterface makeBeans(Class<T> classDependent) {
+	public <T extends Dependent> Injector makeBeans(Class<T> classDependent) {
 		_WiringHelper helper = _WiringHelper.setContext(contextName);
 		helper.loginfo(_WiringDoer.class,
 				() -> "Make beans for dependent " + _WiringHelper.getPrintNameOfClass(classDependent) + " ...");
@@ -159,7 +160,7 @@ public class _WiringDoer implements _WiringInterface {
 	}
 
 	@Override
-	public _WiringInterface start() {
+	public Injector start() {
 		if (makeBeansList.isEmpty()) {
 			helper.logerror(_WiringDoer.class, () -> "No class injection done yet, see .makeBeans(...).");
 		} else {
@@ -197,7 +198,7 @@ public class _WiringDoer implements _WiringInterface {
 	}
 
 	@Override
-	public _WiringInterface stop() {
+	public Injector stop() {
 		helper.loginfo(_WiringDoer.class, () -> "Stop beans...");
 		StopWatch start = StopWatch.start();
 		makeBeansList.forEach(name -> {
@@ -240,7 +241,7 @@ public class _WiringDoer implements _WiringInterface {
 	}
 
 	@Override
-	public _WiringInterface print() {
+	public Injector print() {
 		print(System.out);
 		return this;
 	}
@@ -250,7 +251,7 @@ public class _WiringDoer implements _WiringInterface {
 	private Set<String> traversedObjects = new HashSet<>();
 
 	@Override
-	public _WiringInterface print(PrintStream out) {
+	public Injector print(PrintStream out) {
 		makeBeansList.forEach(name -> {
 			Object object = objectMap.get(name);
 			if (object instanceof Dependent) {
@@ -355,7 +356,7 @@ public class _WiringDoer implements _WiringInterface {
 	}
 
 	@Override
-	public _WiringInterface remove() {
+	public Injector remove() {
 		synchronized (wiringContextMap) {
 			wiringContextMap.remove(contextName);
 			helper.remove();

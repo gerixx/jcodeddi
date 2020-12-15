@@ -5,6 +5,8 @@ import java.io.StringWriter;
 import java.util.Date;
 import java.util.function.Supplier;
 
+import coded.dependency.injection.internal._WiringDoer;
+
 /**
  * Default log implementation, see {@link LogBindingInterface}.
  *
@@ -34,7 +36,7 @@ public class LogBindingAdapter implements LogBindingInterface {
 		for (int i = 0; i < stackTrace.length; i++) {
 			StackTraceElement elem = stackTrace[i];
 			if (!injectionStackBegin && elem.getClassName()
-				.equals(Injector.class.getName()) || elem.getClassName()
+				.equals(_WiringDoer.class.getName()) || elem.getClassName()
 					.equals(Dependency.class.getName())) {
 				injectionStackBegin = true;
 			}

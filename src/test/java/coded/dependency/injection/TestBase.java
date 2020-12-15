@@ -9,13 +9,13 @@ public class TestBase {
 
 	@Rule
 	public TestWatcher watchman = new TestWatcher() {
-			@Override
-			protected void starting(Description description) {
-				super.starting(description);
-				System.out.printf("%ntest: %s#%s()%n", description.getTestClass()
-					.getName(), description.getMethodName());
-			}
-		};
+		@Override
+		protected void starting(Description description) {
+			super.starting(description);
+			System.out.printf("%ntest: %s#%s()%n", description.getTestClass()
+				.getName(), description.getMethodName());
+		}
+	};
 
 	@After
 	public void after() {

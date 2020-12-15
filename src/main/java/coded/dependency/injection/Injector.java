@@ -5,20 +5,13 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import coded.dependency.injection.internal._WiringDoer;
-import coded.dependency.injection.internal._WiringInterface;
 
 /**
  * The coded injection API. Create or access a named injector using
  * {@link #getContext(String)}.
  * 
  */
-public class Injector implements _WiringInterface {
-
-	private _WiringInterface delegate;
-
-	private Injector(_WiringInterface delegate) {
-		this.delegate = delegate;
-	}
+public interface Injector {
 
 	/**
 	 * Retrieves the named injector. A new one is created if needed. Use this to
@@ -30,87 +23,11 @@ public class Injector implements _WiringInterface {
 	 * @return the injector
 	 */
 	public static Injector getContext(String contextName) {
-		return new Injector(_WiringDoer.getOrCreateContext(contextName));
+		return (Injector) _WiringDoer.getOrCreateContext(contextName);
 	}
 
 	public static String[] getContextNames() {
 		return _WiringDoer.getContextNames();
-	}
-
-	@Override
-	public String getName() {
-		return delegate.getName();
-	}
-
-	@Override
-	public Injector setLogger(LogBindingInterface logger) {
-		delegate.setLogger(logger);
-		return this;
-	}
-
-	@Override
-	public <T> Injector defineConstruction(Class<? super T> clz, Supplier<? super T> construction) {
-		delegate.defineConstruction(clz, construction);
-		return this;
-	}
-
-	@Override
-	public <T> Injector defineStart(Class<? super T> clz, Consumer<? super T> start) {
-		delegate.defineStart(clz, start);
-		return this;
-	}
-
-	@Override
-	public <T> Injector defineStop(Class<? super T> clz, Consumer<? super T> stop) {
-		delegate.defineStop(clz, stop);
-		return this;
-	}
-
-	@Override
-	public <T> Injector defineStartStop(Class<? super T> clz, Consumer<? super T> start, Consumer<? super T> stop) {
-		delegate.defineStartStop(clz, start, stop);
-		return this;
-	}
-
-	@Override
-	public <T extends Dependent> Injector makeBeans(Class<T> classDependent) {
-		delegate.makeBeans(classDependent);
-		return this;
-	}
-
-	@Override
-	public Injector start() {
-		delegate.start();
-		return this;
-	}
-
-	@Override
-	public Injector stop() {
-		delegate.stop();
-		return this;
-	}
-
-	@Override
-	public <T> T getBean(Class<T> clz) {
-		return delegate.getBean(clz);
-	}
-
-	@Override
-	public Injector print() {
-		delegate.print();
-		return this;
-	}
-
-	@Override
-	public Injector print(PrintStream out) {
-		delegate.print(out);
-		return this;
-	}
-
-	@Override
-	public Injector remove() {
-		delegate.remove();
-		return this;
 	}
 
 	/**
@@ -123,4 +40,106 @@ public class Injector implements _WiringInterface {
 		_WiringDoer.removeAll();
 	}
 
+	/**
+	 * @return application context (injector) name
+	 */
+	String getName();
+
+	/**
+	 * Set your own log target by implementing {@link LogBindingInterface}. Default
+	 * implementation is {@link LogBindingAdapter} writing logs to
+	 * {@link System#out}. Set logger to null to disable log outputs.
+	 */
+	Injector setLogger(LogBindingInterface logger);
+
+	/**
+	 * Optional, defines the supplier of the given class, otherwise the default
+	 * constructor is used.
+	 * 
+	 * @param clz
+	 * @param construction
+	 * @return the injector
+	 */
+	<T> Injector defineConstruction(Class<? super T> clz, Supplier<? super T> construction);
+
+	/**
+	 * Optional, defines the consumer for the given class instance (the bean) which
+	 * is executed on {@link Injector#start()}. See also interface {@link Lifecycle}
+	 * which can be used alternatively.
+	 */
+	<T> Injector defineStart(Class<? super T> clz, Consumer<? super T> start);
+
+	/**
+	 * Optional, defines the consumer for the given class instance (the bean) which
+	 * is executed on {@link Injector#stop()}. See also interface {@link Lifecycle}
+	 * which can be used alternatively.
+	 */
+	<T> Injector defineStop(Class<? super T> clz, Consumer<? super T> stop);
+
+	/**
+	 * Optional, for convenience, it combines {@link #defineStart(Class, Consumer)}
+	 * and {@link #defineStop(Class, Consumer)}
+	 */
+	<T> Injector defineStartStop(Class<? super T> clz, Consumer<? super T> start, Consumer<? super T> stop);
+
+	/**
+	 * Creates dependency objects (the beans) and wires them up recursively. Defined
+	 * construction supplier or no-argument constructors are invoked to create beans
+	 * if not created yet, see also {@link #defineConstruction(Class, Supplier)}.
+	 * Beans are treated as 'singletons' within an injector. Multiple connects of
+	 * classes are ignored.
+	 * 
+	 * @param <T>
+	 * @param classDependent class to begin with recursive wiring
+	 * @return injector
+	 * @throws Exception
+	 */
+	<T extends Dependent> Injector makeBeans(Class<T> classDependent);
+
+	/**
+	 * Runs for all beans its start method if it was defined by
+	 * {@link #defineStart(Class, Consumer)} or by the implementation of the
+	 * {@link Lifecycle} interface.
+	 */
+	Injector start();
+
+	/**
+	 * Runs for all beans its stop method if it was defined by
+	 * {@link #defineStop(Class, Consumer)} or by the implementation of the
+	 * {@link Lifecycle} interface.
+	 */
+	Injector stop();
+
+	/**
+	 * Returns the bean for the given class or null if it does not exist. Any bean
+	 * created by {@link #makeBeans(Class)} can be accessed, including service beans
+	 * that were created by {@link Dependency} members of {@link Dependent}s.
+	 * 
+	 * @param <T> bean type
+	 * @param clz bean class
+	 * @return bean or null
+	 */
+	<T> T getBean(Class<T> clz);
+
+	/**
+	 * Prints the dependency tree(s) to System.out.
+	 */
+	Injector print();
+
+	/**
+	 * Print the dependency tree(s) to the given PrintWriter.
+	 * 
+	 * @param out
+	 */
+	Injector print(PrintStream out);
+
+	/**
+	 * Removes this application context (injector instance) from the injector
+	 * provider. Can be used to free internal memory if an injector is not needed
+	 * anymore, for example when using an injector in a Servlet session and it is
+	 * released. Use this carefully! After removal, invocation of
+	 * {@link Injector#getContext(String)} with the same context name would create a
+	 * new injector instance.
+	 */
+	Injector remove();
 }
