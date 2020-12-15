@@ -4,7 +4,7 @@ import java.io.PrintStream;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import coded.dependency.injection.internal._WiringDoer;
+import coded.dependency.injection.internal._WiringHelper;
 
 /**
  * The coded injection API. Create or access a named injector using
@@ -23,11 +23,11 @@ public interface Injector {
 	 * @return the injector
 	 */
 	public static Injector getContext(String contextName) {
-		return (Injector) _WiringDoer.getOrCreateContext(contextName);
+		return (Injector) _WiringHelper.getOrCreateContext(contextName);
 	}
 
 	public static String[] getContextNames() {
-		return _WiringDoer.getContextNames();
+		return _WiringHelper.getContextNames();
 	}
 
 	/**
@@ -37,7 +37,7 @@ public interface Injector {
 	 * previously used context name.
 	 */
 	public static void removeAll() {
-		_WiringDoer.removeAll();
+		_WiringHelper.removeAll();
 	}
 
 	/**

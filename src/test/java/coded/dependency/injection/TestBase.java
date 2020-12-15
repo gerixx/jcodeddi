@@ -1,5 +1,8 @@
 package coded.dependency.injection;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
@@ -20,6 +23,21 @@ public class TestBase {
 	@After
 	public void after() {
 		Injector.removeAll();
+	}
+
+	protected String cutDateOfLine(String line) {
+		return line.substring(line.indexOf('['));
+	}
+
+	protected String cutDate(String lines) {
+		return Arrays.stream(lines.split("\\n"))
+			.map(line -> cutDateOfLine(line).replace("\r", ""))
+			.collect(Collectors.joining("\n"));
+	}
+
+	protected String replaceInMsAndLineNumber(String lines) {
+		return lines.replaceAll("in \\d+ms", "in Xms")
+			.replaceAll(".java:\\d+", ".java:X");
 	}
 
 }

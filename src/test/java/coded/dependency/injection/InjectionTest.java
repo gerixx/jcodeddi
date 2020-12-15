@@ -6,6 +6,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,6 +30,12 @@ import coded.dependency.injection.internal.fortest.MyServiceImplementation;
 import coded.dependency.injection.internal.fortest.MyServiceInterface;
 
 public class InjectionTest extends TestBase {
+
+	private static final String EXPECTED_DEFAULT_LOG = "[INFO] injector 'app': Make beans for dependent D (coded.dependency.injection.internal.fortest.D) ... - thread: main (InjectionTest.java:X)\n"
+			+ "[INFO] injector 'app': Created B (coded.dependency.injection.internal.fortest.B) using default consctructor in Xms. - thread: main (D.java:X)\n"
+			+ "[INFO] injector 'app': Injected D -> B ('coded.dependency.injection.internal.fortest.B' into the dependent 'coded.dependency.injection.internal.fortest.D'). - thread: main (D.java:X)\n"
+			+ "[INFO] injector 'app': Created D (coded.dependency.injection.internal.fortest.D) using default consctructor in Xms. - thread: main (InjectionTest.java:X)\n"
+			+ "[INFO] injector 'app': Make beans finished in Xms. - thread: main (InjectionTest.java:X)";
 
 	/**
 	 * Connect beans: <br>
@@ -250,6 +258,32 @@ public class InjectionTest extends TestBase {
 		Injector.getContext("app")
 			.defineConstruction(D.class, this::createD_inNewThread)
 			.makeBeans(A.class);
+	}
+
+	@Test
+	public void testDefaultLogger() {
+		ByteArrayOutputStream logTarget = new ByteArrayOutputStream();
+		PrintStream out = new PrintStream(logTarget);
+		System.setOut(out);
+
+		Injector.getContext("app")
+			.makeBeans(D.class);
+
+		assertEquals(EXPECTED_DEFAULT_LOG, replaceInMsAndLineNumber(cutDate(logTarget.toString())));
+	}
+
+	@Test
+	public void testDisableLogger() {
+		ByteArrayOutputStream logTarget = new ByteArrayOutputStream();
+		PrintStream out = new PrintStream(logTarget);
+		System.setOut(out);
+
+		Injector.getContext("app")
+			.setLogger(null)
+			.makeBeans(A.class);
+		out.flush();
+
+		assertEquals(0, logTarget.toByteArray().length);
 	}
 
 	private ExecutorService exec = Executors.newSingleThreadExecutor();

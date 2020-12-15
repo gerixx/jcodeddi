@@ -5,7 +5,6 @@ import coded.dependency.injection.exception.ConstructionMissingException;
 import coded.dependency.injection.exception.ContextMismatchException;
 import coded.dependency.injection.exception.CyclicDependencyException;
 import coded.dependency.injection.exception.DependencyCreationException;
-import coded.dependency.injection.internal._WiringDoer;
 import coded.dependency.injection.internal._WiringHelper;
 
 public class Dependency<T> {
@@ -78,19 +77,17 @@ public class Dependency<T> {
 	 * @param targetClass
 	 */
 	public Dependency(String contextName, Dependent dependent, Class<T> targetClass) {
-		_WiringDoer.getOrCreateContext(contextName);
+		final _WiringHelper helper = (_WiringHelper) _WiringHelper.getOrCreateContext(contextName);
 		try {
-			final _WiringHelper helper;
 			try {
-				helper = _WiringHelper.setContext(contextName);
+				_WiringHelper.setThreadContext(contextName);
 			} catch (ContextMismatchException e) {
-				_WiringHelper.getContext(contextName)
-					.logerror(Dependency.class, () -> e.getMessage());
+				helper.logerror(Dependency.class, () -> e.getMessage());
 				throw e;
 			}
 			registerDependencyForContext(dependent, targetClass, helper);
 		} finally {
-			_WiringHelper.resetContext();
+			_WiringHelper.resetThreadContext();
 		}
 	}
 
