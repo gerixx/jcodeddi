@@ -138,15 +138,14 @@ public class _WiringHelper implements Injector {
 
 	@Override
 	public <T extends Dependent> Injector makeBeans(Class<T> classDependent) {
-		setThreadContext(contextName);
 		loginfo(_WiringHelper.class, () -> "Make beans for dependent " + getPrintNameOfClass(classDependent) + " ...");
 		StopWatch start = StopWatch.start();
 		try {
+			setThreadContext(contextName);
 			getOrCreateObjectImpl(classDependent);
 			makeBeansList.add(classDependent.getName());
 		} catch (ContextMismatchException | BeanOutOfContextCreationException | CyclicDependencyException
 				| ConstructionMissingException | DependencyCreationException e) {
-//			helper.logerror(_WiringDoer.class, () -> e.getMessage());
 			throw e;
 		} catch (Exception e) {
 			if (isCauseKnownRuntimeException(e)) {
@@ -338,7 +337,7 @@ public class _WiringHelper implements Injector {
 		objectCreationPending.remove(name);
 	}
 
-	public <T> Object getOrCreateObject(Class<?> targetClass) throws Exception {
+	private <T> Object getOrCreateObject(Class<?> targetClass) throws Exception {
 		if (objectCreationPending.contains(targetClass.getName())) {
 			// TODO track dependent and log it
 			throw new CyclicDependencyException("Cyclic dependency to " + getPrintNameOfClass(targetClass));
@@ -352,7 +351,7 @@ public class _WiringHelper implements Injector {
 	public static void removeAll() {
 		synchronized (wiringContextMap) {
 			wiringContextMap.clear();
-			restAll();
+			threadContext.set(null);
 		}
 	}
 
@@ -371,8 +370,12 @@ public class _WiringHelper implements Injector {
 					"Initialization of context '%s' is not finisihed. New context '%s' cannot be created.", contextName,
 					ctx));
 		}
+		_WiringHelper context = getContext(ctx);
+		if (context == null) {
+			throw new IllegalStateException(String.format("Context '%s' does not exist.", ctx));
+		}
 		threadContext.set(ctx);
-		return getContext(contextName);
+		return context;
 	}
 
 	public static _WiringHelper getContext(String contextName) {
@@ -410,18 +413,9 @@ public class _WiringHelper implements Injector {
 		return dependencies.get(dependent);
 	}
 
-	public static void restAll() {
-		wiringContextMap.clear();
-		threadContext.set(null);
-	}
-
 	@SuppressWarnings("unchecked")
 	public <T> T getObject(Class<T> targetClass) throws Exception {
 		return (T) ((_WiringHelper) _WiringHelper.getOrCreateContext(contextName)).getOrCreateObject(targetClass);
-	}
-
-	public static <T> T getObject(String contextName, Class<T> targetClass) throws Exception {
-		return null;
 	}
 
 	public void loginfo(Class<?> clz, Supplier<String> msg) {
@@ -445,15 +439,15 @@ public class _WiringHelper implements Injector {
 		}
 	}
 
-	public static String getPrintName(Object object) {
+	private static String getPrintName(Object object) {
 		return getPrintNameOfClass(object.getClass());
 	}
 
-	public static String getPrintNameOfClass(Class<?> clz) {
+	private static String getPrintNameOfClass(Class<?> clz) {
 		return clz.getSimpleName() + " (" + clz.getName() + ")";
 	}
 
-	public static String getPrintName(String name, Object object) {
+	private static String getPrintName(String name, Object object) {
 		final String printName;
 		String fullClassName = object.getClass()
 			.getName();

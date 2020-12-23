@@ -17,6 +17,7 @@ import org.junit.Test;
 import coded.dependency.injection.exception.BeanOutOfContextCreationException;
 import coded.dependency.injection.exception.ConstructionMissingException;
 import coded.dependency.injection.exception.DependencyCreationException;
+import coded.dependency.injection.exception.MakeBeansException;
 import coded.dependency.injection.internal._LogBindingAdapterDebug;
 import coded.dependency.injection.internal._WiringHelper;
 import coded.dependency.injection.internal.fortest.A;
@@ -251,6 +252,13 @@ public class InjectionTest extends TestBase {
 		// it anymore, it could be garbage collected
 		injector.start();
 		validateStartStopWorks(injector);
+	}
+
+	@Test(expected = MakeBeansException.class)
+	public void testCannotMakeBeansWhenContextWasRemoved() {
+		Injector.getContext("app")
+			.remove()
+			.makeBeans(MyApplicationImpl.class);
 	}
 
 	@Test(expected = DependencyCreationException.class)
