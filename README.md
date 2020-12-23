@@ -213,7 +213,7 @@ For every interface that is used in a `Dependency` declaration, a construction s
 See for example `defineConstruction(MyService.class, MyServiceImpl::new)`.
 
 ```Java
-Injector injector = .getContext("myapp");
+Injector injector = Injector.getContext("myapp");
 injector.defineConstruction(MyApp.class, MyAppImpl::new)
 	.defineConstruction(MyService.class, MyServiceImpl::new)
 	.makeBeans(MyApp.class)
@@ -231,14 +231,33 @@ assertFalse(injector.getBean(MyApp.class)
 assertFalse(injector.getBean(MyService.class)
 	.isRunning());
 ```
+## Dagger 2 CoffeeShop Example
+
+See [`coded.dependency.injection.example.dagger2.CoffeeApp`](./src/test/java/coded/dependency/injection/example/dagger2/CoffeeApp.java), ported from
+[Dagger CoffeeMaker example at github](https://github.com/google/dagger/tree/master/examples/maven/coffee/src/main/java/example/dagger).
+See also [Dagger 2](https://dagger.dev/dev-guide/).
+
+Dependency tree printed by `Injector#print`:
+
+```
+CoffeeShop (coded.dependency.injection.example.dagger2.CoffeeApp$CoffeeShop)
+  -> CoffeeMaker (coded.dependency.injection.example.dagger2.CoffeeMaker)
+    -> CoffeeLogger (coded.dependency.injection.example.dagger2.CoffeeLogger)
+    -> ElectricHeater (coded.dependency.injection.example.dagger2.ElectricHeater)
+      -> CoffeeLogger (coded.dependency.injection.example.dagger2.CoffeeLogger)
+    -> Thermosiphon (coded.dependency.injection.example.dagger2.Thermosiphon)
+      -> CoffeeLogger (coded.dependency.injection.example.dagger2.CoffeeLogger)
+      -> ElectricHeater (coded.dependency.injection.example.dagger2.ElectricHeater)
+  -> CoffeeLogger (coded.dependency.injection.example.dagger2.CoffeeLogger)
+```
 
 ## springframework.guru Example
 
-See `coded.dependency.injection.example.springfw.guru.DiExampleApplication`, ported from 
+See [`coded.dependency.injection.example.springfw.guru.DiExampleApplication`](./src/test/java/coded/dependency/injection/example/springfw/guru/DiExampleApplication.java), ported from 
 [springframework.guru](https://springframework.guru/dependency-injection-example-using-spring/).
 
 
 ## vogella.com Example
 
-See `coded.dependency.injection.example.vogella.Main`, ported from
-[vogella.com](https://www.vogella.com/tutorials/SpringDependencyInjection/article.html)
+See [`coded.dependency.injection.example.vogella.MainVogellaDiExample`](./src/test/java/coded/dependency/injection/example/vogella/MainVogellaDiExample.java), ported from
+[vogella.com](https://www.vogella.com/tutorials/SpringDependencyInjection/article.html).
