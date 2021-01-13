@@ -5,6 +5,7 @@ import coded.dependency.injection.exception.ConstructionMissingException;
 import coded.dependency.injection.exception.ContextMismatchException;
 import coded.dependency.injection.exception.CyclicDependencyException;
 import coded.dependency.injection.exception.DependencyCreationException;
+import coded.dependency.injection.internal._NoContextDefinedException;
 import coded.dependency.injection.internal._WiringHelper;
 
 public class Dependency<T> {
@@ -31,13 +32,20 @@ public class Dependency<T> {
 	 */
 	public Dependency(Dependent d, Class<T> targetClass) {
 		this.targetClass = targetClass;
-		_WiringHelper helper = _WiringHelper.getThreadContext();
-		registerDependencyForContext(d, targetClass, helper);
+		registerDependencyForContext(d, targetClass);
 	}
 
-	private void registerDependencyForContext(Dependent dependent, Class<T> targetClass, _WiringHelper helper) {
+	private void registerDependencyForContext(Dependent dependent, Class<T> targetClass) {
+		_WiringHelper helper = null;
 		try {
-			assert helper != null;
+			helper = _WiringHelper.getThreadContext();
+		} catch (_NoContextDefinedException e) {
+			throw new BeanOutOfContextCreationException("injection error: " + getInjectionInfo(dependent)
+					+ " - two possible reasons: (1) the bean is not created by the injector or "
+					+ "(2) the bean is not created within the injector thread.");
+		}
+
+		try {
 			helper.addNewDependency(dependent, this);
 			target = helper.getObject(targetClass);
 			if (target == null) {
@@ -46,12 +54,8 @@ public class Dependency<T> {
 			helper.loginfo(Dependency.class, () -> {
 				return "Injected " + getInjectionInfo(dependent) + ".";
 			});
-		} catch (BeanOutOfContextCreationException e) {
-			throw new BeanOutOfContextCreationException("injection error: " + getInjectionInfo(dependent)
-					+ " - two possible reasons: (1) the bean is not created by the injector or "
-					+ "(2) the bean is not created within the injector thread.");
-		} catch (ContextMismatchException | CyclicDependencyException | ConstructionMissingException
-				| DependencyCreationException e) {
+		} catch (BeanOutOfContextCreationException | ContextMismatchException | CyclicDependencyException
+				| ConstructionMissingException | DependencyCreationException e) {
 			helper.logerror(Dependency.class, () -> e.getMessage());
 			throw e;
 		} catch (Exception e) {
@@ -60,9 +64,7 @@ public class Dependency<T> {
 				helper.logerror(Dependency.class, () -> cause.getMessage());
 				throw cause;
 			}
-			if (helper != null) {
-				helper.logerror(Dependency.class, () -> "Injecting " + getInjectionInfo(dependent) + " failed", e);
-			}
+			helper.logerror(Dependency.class, () -> "Injecting " + getInjectionInfo(dependent) + " failed", e);
 			throw new DependencyCreationException(getInjectionInfo(dependent), e);
 		}
 	}
@@ -70,7 +72,8 @@ public class Dependency<T> {
 	/**
 	 * Creates a dependency of an anonymous client object. The client must not be
 	 * created by {@link Injector#makeBeans(Class)}. With that the client object is
-	 * an unknown bean of the injection context.
+	 * an unknown bean for the injection context. This is not intended for regular
+	 * use! But it could help for example during migration to jcodeddi.
 	 * 
 	 * @param contextName Injector context is implicitly created if not existing yet
 	 * @param dependent
@@ -85,7 +88,7 @@ public class Dependency<T> {
 				helper.logerror(Dependency.class, () -> e.getMessage());
 				throw e;
 			}
-			registerDependencyForContext(dependent, targetClass, helper);
+			registerDependencyForContext(dependent, targetClass);
 		} finally {
 			_WiringHelper.resetThreadContext();
 		}

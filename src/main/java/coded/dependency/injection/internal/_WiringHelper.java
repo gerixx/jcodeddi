@@ -382,10 +382,10 @@ public class _WiringHelper implements Injector {
 		return wiringContextMap.get(contextName);
 	}
 
-	public static _WiringHelper getThreadContext() {
+	public static _WiringHelper getThreadContext() throws _NoContextDefinedException {
 		String contextName = threadContext.get();
 		if (contextName == null) {
-			throw new BeanOutOfContextCreationException();
+			throw new _NoContextDefinedException();
 		}
 		return getContext(contextName);
 	}
@@ -415,7 +415,7 @@ public class _WiringHelper implements Injector {
 
 	@SuppressWarnings("unchecked")
 	public <T> T getObject(Class<T> targetClass) throws Exception {
-		return (T) ((_WiringHelper) _WiringHelper.getOrCreateContext(contextName)).getOrCreateObject(targetClass);
+		return (T) getOrCreateObject(targetClass);
 	}
 
 	public void loginfo(Class<?> clz, Supplier<String> msg) {

@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import coded.dependency.injection.exception.BeanOutOfContextCreationException;
@@ -37,6 +39,18 @@ public class InjectionTest extends TestBase {
 			+ "[INFO] injector 'app': Injected D -> B ('coded.dependency.injection.internal.fortest.B' into the dependent 'coded.dependency.injection.internal.fortest.D'). - thread: main (D.java:X)\n"
 			+ "[INFO] injector 'app': Created D (coded.dependency.injection.internal.fortest.D) using default consctructor in Xms. - thread: main (InjectionTest.java:X)\n"
 			+ "[INFO] injector 'app': Make beans finished in Xms. - thread: main (InjectionTest.java:X)";
+
+	private PrintStream sysOut;
+
+	@Before
+	public void beforeInjectionTest() {
+		sysOut = System.out;
+	}
+
+	@After
+	public void afterInjectionTest() {
+		System.setOut(sysOut);
+	}
 
 	/**
 	 * Connect beans: <br>

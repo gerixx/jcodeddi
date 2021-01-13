@@ -21,7 +21,7 @@ public class TestBase {
 	};
 
 	@After
-	public void after() {
+	public void afterTestBase() {
 		Injector.removeAll();
 	}
 
