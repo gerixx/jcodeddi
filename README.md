@@ -276,16 +276,23 @@ See for example `defineConstruction(MyService.class, MyServiceImpl::new)`.
 Injector injector = Injector.getContext("myapp");
 injector.defineConstruction(MyApp.class, MyAppImpl::new)
 	.defineConstruction(MyService.class, MyServiceImpl::new)
+	.defineConstruction(HelperProcessStarter.class, HelperProcessStarter::new)
 	.makeBeans(MyApp.class)
 	.start();
 
+assertTrue(injector.getBean(HelperProcessStarter.class)
+	.isRunning());
 assertTrue(injector.getBean(MyApp.class)
 	.isRunning());
 assertTrue(injector.getBean(MyService.class)
 	.isRunning());
 
+injector.print();
+
 injector.stop();
 
+assertFalse(injector.getBean(HelperProcessStarter.class)
+	.isRunning());
 assertFalse(injector.getBean(MyApp.class)
 	.isRunning());
 assertFalse(injector.getBean(MyService.class)
