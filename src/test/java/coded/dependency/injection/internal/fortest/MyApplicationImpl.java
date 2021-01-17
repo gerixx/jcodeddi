@@ -9,9 +9,12 @@ public class MyApplicationImpl implements MyApplicationInterface {
 	private boolean isStopped;
 
 	@Override
-	public String start() {
+	public void start() {
 		System.out.println("MyApp starts...");
 		isStarted = true;
+	}
+
+	public String getGreets() {
 		return svc.get()
 			.greets();
 	}

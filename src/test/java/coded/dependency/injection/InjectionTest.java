@@ -20,7 +20,6 @@ import coded.dependency.injection.exception.BeanOutOfContextCreationException;
 import coded.dependency.injection.exception.ConstructionMissingException;
 import coded.dependency.injection.exception.DependencyCreationException;
 import coded.dependency.injection.exception.MakeBeansException;
-import coded.dependency.injection.internal._LogBindingAdapterDebug;
 import coded.dependency.injection.internal._WiringHelper;
 import coded.dependency.injection.internal.fortest.A;
 import coded.dependency.injection.internal.fortest.A2;
@@ -33,7 +32,6 @@ import coded.dependency.injection.internal.fortest.Interface1Dependent;
 import coded.dependency.injection.internal.fortest.Interface2;
 import coded.dependency.injection.internal.fortest.Interface2Dependent;
 import coded.dependency.injection.internal.fortest.MyApplicationImpl;
-import coded.dependency.injection.internal.fortest.MyApplicationInterface;
 import coded.dependency.injection.internal.fortest.MyServiceImplementation;
 import coded.dependency.injection.internal.fortest.MyServiceInterface;
 
@@ -156,11 +154,11 @@ public class InjectionTest extends TestBase {
 	public void testConnectInterfaces() throws Exception {
 		Injector injector = Injector.getContext("app");
 
-		MyApplicationInterface app = injector.defineConstruction(MyServiceInterface.class, MyServiceImplementation::new)
+		MyApplicationImpl app = injector.defineConstruction(MyServiceInterface.class, MyServiceImplementation::new)
 			.makeBeans(MyApplicationImpl.class)
 			.getBean(MyApplicationImpl.class);
 
-		String greets = app.start();
+		String greets = app.getGreets();
 		assertEquals("greets from my service", greets);
 
 		MyServiceInterface beanAsInterface = injector.getBean(MyServiceInterface.class);
@@ -170,31 +168,13 @@ public class InjectionTest extends TestBase {
 		assertEquals("greets from my service", beanAsImplementation.greets());
 	}
 
-	String greets = null;
-
-	@Test
-	public void testStartStop() throws Exception {
-		Injector.getContext("app")
-			.setLogger(new _LogBindingAdapterDebug())
-			.defineConstruction(MyServiceInterface.class, MyServiceImplementation::new)
-			.defineStartStop(MyApplicationImpl.class, app -> greets = app.start(), app -> app.stop())
-			.defineStartStop(MyServiceImplementation.class, svc -> svc.initialize(), svc -> svc.destroy())
-			.makeBeans(MyApplicationImpl.class)
-			.start();
-
-		Injector injector = Injector.getContext("app");
-		injector.print();
-
-		// then
-		validateStartStopWorks(injector);
-	}
-
 	private void validateStartStopWorks(Injector injector) {
 		assertTrue(injector.getBean(MyApplicationImpl.class)
 			.isStarted());
 		assertTrue(injector.getBean(MyServiceImplementation.class)
 			.isInitialized());
-		assertEquals("greets from my service", greets);
+		assertEquals("greets from my service", injector.getBean(MyApplicationImpl.class)
+			.getGreets());
 		assertTrue(injector.getBean(B.class).isStarted);
 
 		// when stop then
@@ -252,8 +232,6 @@ public class InjectionTest extends TestBase {
 	public void testRemoveInjectorLifecycleStillWorking() {
 		Injector injector = Injector.getContext("app")
 			.defineConstruction(MyServiceInterface.class, MyServiceImplementation::new)
-			.defineStartStop(MyApplicationImpl.class, app -> greets = app.start(), app -> app.stop())
-			.defineStartStop(MyServiceImplementation.class, svc -> svc.initialize(), svc -> svc.destroy())
 			.makeBeans(MyApplicationImpl.class);
 
 		assertNotNull(Injector.getContext("app")

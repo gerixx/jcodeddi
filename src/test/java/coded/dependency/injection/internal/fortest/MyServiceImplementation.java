@@ -11,13 +11,13 @@ public class MyServiceImplementation implements MyServiceInterface, Dependent {
 	private boolean isStopped;
 
 	@Override
-	public void initialize() {
+	public void start() {
 		initialized = true;
 		System.out.println("MyService initialized.");
 	}
 
 	@Override
-	public void destroy() {
+	public void stop() {
 		System.out.println("MyService destroyed.");
 		isStopped = true;
 	}

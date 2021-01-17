@@ -1,10 +1,12 @@
 package coded.dependency.injection.internal.fortest;
 
-public interface MyServiceInterface {
+import coded.dependency.injection.Lifecycle;
 
-	public void initialize();
+public interface MyServiceInterface extends Lifecycle {
 
-	public void destroy();
+	public void start();
+
+	public void stop();
 
 	public String greets();
 }

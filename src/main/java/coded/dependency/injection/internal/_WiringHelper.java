@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import coded.dependency.injection.Dependency;
@@ -34,8 +33,6 @@ public class _WiringHelper implements Injector {
 
 	private final Map<String, Object> objectMap = new HashMap<>();
 	private final Map<String, Supplier<?>> objectConstructionMap = new HashMap<>();
-	private final Map<String, Consumer<?>> objectStopMap = new HashMap<>();
-	private final Map<String, Consumer<?>> objectStartMap = new HashMap<>();
 	private final Set<String> objectStartedSet = new HashSet<>();
 	private final Set<String> objectStoppedSet = new HashSet<>();
 	private final Set<String> objectCreationPending = new HashSet<>();
@@ -105,35 +102,13 @@ public class _WiringHelper implements Injector {
 
 	@Override
 	public <T> Injector defineConstruction(Class<? super T> clz, Supplier<? super T> construction) {
-		return define(clz, construction, null, null);
+		return define(clz, construction);
 	}
 
-	@Override
-	public <T> Injector defineStart(Class<? super T> clz, Consumer<? super T> start) {
-		return define(clz, null, start, null);
-	}
-
-	@Override
-	public <T> Injector defineStop(Class<? super T> clz, Consumer<? super T> stop) {
-		return define(clz, null, null, stop);
-	}
-
-	@Override
-	public <T> Injector defineStartStop(Class<? super T> clz, Consumer<? super T> start, Consumer<? super T> stop) {
-		return define(clz, null, start, stop);
-	}
-
-	private <T> _WiringHelper define(Class<? super T> clz, Supplier<? super T> construction, Consumer<? super T> start,
-			Consumer<? super T> stop) {
+	private <T> _WiringHelper define(Class<? super T> clz, Supplier<? super T> construction) {
 		String name = clz.getName();
 		if (construction != null) {
 			objectConstructionMap.put(name, construction);
-		}
-		if (start != null) {
-			objectStartMap.put(name, start);
-		}
-		if (stop != null) {
-			objectStopMap.put(name, stop);
 		}
 		return this;
 	}
@@ -193,14 +168,8 @@ public class _WiringHelper implements Injector {
 				});
 			}
 		}
-		Consumer<?> consumer = objectStartMap.get(name);
-		StopWatch start = StopWatch.start();
-		if (consumer != null) {
-			consumer.accept(this.getTypedObject(name));
-			objectStartedSet.add(name);
-			loginfo(_WiringHelper.class, () -> "Started " + getPrintName(this.getTypedObject(name))
-					+ " using Consumer in " + start.stop() + "ms.");
-		} else if (objectMap.get(name) instanceof Lifecycle) {
+		if (objectMap.get(name) instanceof Lifecycle) {
+			StopWatch start = StopWatch.start();
 			((Lifecycle) objectMap.get(name)).start();
 			objectStartedSet.add(name);
 			loginfo(_WiringHelper.class, () -> "Started " + getPrintName(this.getTypedObject(name))
@@ -225,14 +194,8 @@ public class _WiringHelper implements Injector {
 			return;
 		}
 
-		StopWatch start = StopWatch.start();
-		Consumer<?> consumer = objectStopMap.get(name);
-		if (consumer != null) {
-			consumer.accept(this.getTypedObject(name));
-			objectStoppedSet.add(name);
-			loginfo(_WiringHelper.class, () -> "Stopped " + getPrintName(this.getTypedObject(name))
-					+ " using Consumer in " + start.stop() + "ms.");
-		} else if (objectMap.get(name) instanceof Lifecycle) {
+		if (objectMap.get(name) instanceof Lifecycle) {
+			StopWatch start = StopWatch.start();
 			((Lifecycle) objectMap.get(name)).stop();
 			objectStoppedSet.add(name);
 			loginfo(_WiringHelper.class, () -> "Stopped " + getPrintName(this.getTypedObject(name))

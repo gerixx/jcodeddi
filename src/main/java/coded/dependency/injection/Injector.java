@@ -63,26 +63,6 @@ public interface Injector {
 	<T> Injector defineConstruction(Class<? super T> clz, Supplier<? super T> construction);
 
 	/**
-	 * Optional, defines the consumer for the given class instance (the bean) which
-	 * is executed on {@link Injector#start()}. See also interface {@link Lifecycle}
-	 * which can be used alternatively.
-	 */
-	<T> Injector defineStart(Class<? super T> clz, Consumer<? super T> start);
-
-	/**
-	 * Optional, defines the consumer for the given class instance (the bean) which
-	 * is executed on {@link Injector#stop()}. See also interface {@link Lifecycle}
-	 * which can be used alternatively.
-	 */
-	<T> Injector defineStop(Class<? super T> clz, Consumer<? super T> stop);
-
-	/**
-	 * Optional, for convenience, it combines {@link #defineStart(Class, Consumer)}
-	 * and {@link #defineStop(Class, Consumer)}
-	 */
-	<T> Injector defineStartStop(Class<? super T> clz, Consumer<? super T> start, Consumer<? super T> stop);
-
-	/**
 	 * Creates dependency objects (the beans) and wires them up recursively. Defined
 	 * construction supplier or no-argument constructors are invoked to create beans
 	 * if not created yet, see also {@link #defineConstruction(Class, Supplier)}.
