@@ -54,12 +54,12 @@ Within the `Injector` is every bean identified by its class. For example to retr
 
 ## IoC
 
-Lambdas can be used for construction and the lifecycle of beans.
+Lambdas can be used for construction of beans.
 
 An optional bean construction `Supplier` can be defined for its class or interface (see also [lifecycle](#lifecycle-of-beans) example).
 With that no reflection is needed to create objects. For example Java compact profiles can omit reflection completely, 
 in that case for every bean a construction supplier has to be defined, see also [JCP](https://www.oracle.com/java/technologies/javase-embedded/compact-profiles-overview.html).
-If not defined, the default constructor of a bean is invoked using `Class#newInstance()`. 
+If no construction is defined for a bean class, the default constructor of is invoked by `Class#newInstance()`. 
 
 Example:
 
@@ -88,9 +88,8 @@ B b = Injector.getContext("app").getBean(B.class);
 ```
 
 Optionally the basic lifecycle of beans can be controlled by `Injector#start()` and `Injector#stop()`.
-With that the injector invokes the start/stop consumer of a bean if it was defined by `Injector#defineStart()`
-`Injector#defineStop()`. 
-Alternatively the interface `Lifecycle` can be implemented, see also the [lifecycle](#lifecycle-of-beans) example below.
+With that the injector invokes the start/stop methods of a bean if it implements 
+the interface `Lifecycle`, see also the [lifecycle](#lifecycle-of-beans) example below.
 
 ## Features
 
@@ -104,9 +103,7 @@ Dependency graph is printable.
 
 Individual construction suppliers for instance creation can be defined.
 
-Individual consumers for starting beans can be defined.
-
-Individual consumers for stopping beans can be defined.
+Life cycle support for starting and stopping beans.
 
 Multiple independent injector instances (application contexts), e.g., for Servlet sessions, are possible.
 
@@ -120,7 +117,9 @@ As the system configuration is coded, it cannot be changed without compilation.
 
 ## Anonymous Client
 
-A client bean that is instantiated by the application and not by the injector, can also use class `Dependency` to declare dependencies to service beans. For this an additional constructor declares the injection context. But, the client object is then unknown for the Injector, for example:
+A client bean that is instantiated by the application and not by the injector, can also use class `Dependency` to declare dependencies to service beans. For this an additional `Dependency` constructor defines the injection context. But, that means also the client object is 'unknown' for the Injector.
+
+Example:
 
 ```Java
 public class MyAnonymousApp implements Dependent {
@@ -144,7 +143,13 @@ This can be useful for interim migration steps. Recommended is to use non anonym
 
 ## Lifecycle of Beans
 
-For example: `MyApp -> MyService`
+Example:
+
+```
+coded.dependency.injection.MyApp (coded.dependency.injection.MyAppImpl)
+  -> MyServiceImpl (coded.dependency.injection.MyServiceImpl)
+    -> HelperProcessStarter (coded.dependency.injection.HelperProcessStarter)
+```
 
 ```Java
 interface MyApp extends Dependent, Lifecycle {
@@ -156,17 +161,62 @@ interface MyService extends Lifecycle {
 	public String greets();
 }
 
-class MyServiceImpl implements MyService {
+class HelperProcessStarter implements Lifecycle {
 	private boolean isRunning;
 
-	@Override // interface Lifecycle
+	@Override
 	public void start() {
+		if (isRunning) {
+			throw new IllegalStateException("already running");
+		}
+		isRunning = true;
+		System.out.println("SomeHelperProcess is started");
+	}
+
+	@Override
+	public void stop() {
+		if (!isRunning) {
+			throw new IllegalStateException("already stopped");
+		}
+		isRunning = false;
+		System.out.println("SomeHelperProcess stopped");
+	}
+
+	public boolean isRunning() {
+		return isRunning;
+	}
+}
+
+class MyServiceImpl implements Dependent, MyService {
+
+	HelperProcessStarter extSvc = new Dependency<>(this, HelperProcessStarter.class).get();
+
+	private boolean isRunning;
+
+	@Override
+	public void start() {
+		if (isRunning) {
+			throw new IllegalStateException("already running");
+		}
+
+		if (!extSvc.isRunning()) {
+			throw new IllegalStateException("HelperProcess must run");
+		}
+
 		isRunning = true;
 		System.out.println("MyService started.");
 	}
 
-	@Override // interface Lifecycle
+	@Override
 	public void stop() {
+		if (!isRunning) {
+			throw new IllegalStateException("already stopped");
+		}
+
+		if (!extSvc.isRunning()) {
+			throw new IllegalStateException("HelperProcess must run");
+		}
+
 		isRunning = false;
 		System.out.println("MyService stopped.");
 	}
@@ -180,24 +230,34 @@ class MyServiceImpl implements MyService {
 	public boolean isRunning() {
 		return isRunning;
 	}
-
 }
 
 class MyAppImpl implements MyApp {
 	private boolean isRunning;
-	
-	Dependency<MyService> svc = new Dependency<>(this, MyService.class); // svc.get() can also be inlined
+
+	MyService svc = new Dependency<>(this, MyService.class).get();
 
 	@Override
 	public void start() {
+		if (isRunning) {
+			throw new IllegalStateException("already running");
+		}
+		if (!svc.isRunning()) {
+			throw new IllegalStateException("svc is not running");
+		}
 		isRunning = true;
-		String svcGreets = svc.get()
-			.greets();
+		String svcGreets = svc.greets();
 		System.out.println("MyApp started, greets from svc: " + svcGreets);
 	}
 
 	@Override
 	public void stop() {
+		if (!isRunning) {
+			throw new IllegalStateException("already stopped");
+		}
+		if (!svc.isRunning()) {
+			throw new IllegalStateException("svc is not running");
+		}
 		isRunning = false;
 		System.out.println("MyApp stopped");
 	}

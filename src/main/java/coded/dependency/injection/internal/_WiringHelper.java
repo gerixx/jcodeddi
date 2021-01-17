@@ -144,10 +144,10 @@ public class _WiringHelper implements Injector {
 		} else {
 			loginfo(_WiringHelper.class, () -> "Start beans...");
 			StopWatch start = StopWatch.start();
-			makeBeansList.forEach(name -> {
+			for (String name : makeBeansList) {
 				Dependent object = (Dependent) objectMap.get(name);
 				startDependencies(name, object);
-			});
+			}
 			loginfo(_WiringHelper.class, () -> "Start beans finished in " + start.stop() + "ms.");
 		}
 		return this;
@@ -161,11 +161,11 @@ public class _WiringHelper implements Injector {
 		if (object instanceof Dependent) {
 			List<Dependency<?>> dependencies = getDependencies((Dependent) object);
 			if (dependencies != null) {
-				dependencies.forEach(dep -> {
+				for (Dependency<?> dep : dependencies) {
 					startDependencies(dep.get()
 						.getClass()
 						.getName(), dep.get());
-				});
+				}
 			}
 		}
 		if (objectMap.get(name) instanceof Lifecycle) {
@@ -181,10 +181,10 @@ public class _WiringHelper implements Injector {
 	public Injector stop() {
 		loginfo(_WiringHelper.class, () -> "Stop beans...");
 		StopWatch start = StopWatch.start();
-		makeBeansList.forEach(name -> {
+		for (String name : makeBeansList) {
 			Dependent object = (Dependent) objectMap.get(name);
 			stopDependencies(name, object);
-		});
+		}
 		loginfo(_WiringHelper.class, () -> "Stop beans finished in " + start.stop() + "ms.");
 		return this;
 	}
@@ -204,11 +204,11 @@ public class _WiringHelper implements Injector {
 		if (object instanceof Dependent) {
 			List<Dependency<?>> dependencies = getDependencies((Dependent) object);
 			if (dependencies != null) {
-				dependencies.forEach(dep -> {
+				for (Dependency<?> dep : dependencies) {
 					stopDependencies(dep.get()
 						.getClass()
 						.getName(), dep.get());
-				});
+				}
 			}
 		}
 	}
@@ -234,7 +234,7 @@ public class _WiringHelper implements Injector {
 
 	@Override
 	public Injector print(PrintStream out) {
-		makeBeansList.forEach(name -> {
+		for (String name : makeBeansList) {
 			Object object = objectMap.get(name);
 			if (object instanceof Dependent) {
 				String depName = getPrintName(name, object);
@@ -244,7 +244,7 @@ public class _WiringHelper implements Injector {
 				printDependencies(out, (Dependent) object);
 			}
 			traversedObjects.clear();
-		});
+		}
 		return this;
 	}
 
@@ -252,7 +252,7 @@ public class _WiringHelper implements Injector {
 		List<Dependency<?>> dependencies = getDependencies(object);
 		indent += "  ";
 		if (dependencies != null) {
-			dependencies.forEach(dep -> {
+			for (Dependency<?> dep : dependencies) {
 				out.print(indent);
 				out.print("-> ");
 				Object target = dep.get();
@@ -272,7 +272,7 @@ public class _WiringHelper implements Injector {
 						}
 					}
 				}
-			});
+			}
 		}
 		indent = indent.substring(0, indent.length() - 2);
 	}

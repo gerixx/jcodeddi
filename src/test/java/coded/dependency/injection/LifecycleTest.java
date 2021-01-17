@@ -29,6 +29,8 @@ public class LifecycleTest extends TestBase {
 		assertTrue(injector.getBean(MyService.class)
 			.isRunning());
 
+		injector.print();
+
 		injector.stop();
 
 		assertFalse(injector.getBean(HelperProcessStarter.class)
@@ -135,6 +137,9 @@ class MyAppImpl implements MyApp {
 	public void stop() {
 		if (!isRunning) {
 			throw new IllegalStateException("already stopped");
+		}
+		if (!svc.isRunning()) {
+			throw new IllegalStateException("svc is not running");
 		}
 		isRunning = false;
 		System.out.println("MyApp stopped");
