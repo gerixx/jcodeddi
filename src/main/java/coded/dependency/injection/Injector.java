@@ -99,14 +99,14 @@ public interface Injector {
 	/**
 	 * Runs for all beans its start method if it was defined by
 	 * {@link #defineStart(Class, Consumer)} or by the implementation of the
-	 * {@link Lifecycle} interface.
+	 * {@link Lifecycle} interface. The dependency tree is processed bottom-up.
 	 */
 	Injector start();
 
 	/**
 	 * Runs for all beans its stop method if it was defined by
 	 * {@link #defineStop(Class, Consumer)} or by the implementation of the
-	 * {@link Lifecycle} interface.
+	 * {@link Lifecycle} interface. The dependency tree is processed top-down.
 	 */
 	Injector stop();
 

@@ -27,6 +27,11 @@ import coded.dependency.injection.internal.fortest.A2;
 import coded.dependency.injection.internal.fortest.B;
 import coded.dependency.injection.internal.fortest.C;
 import coded.dependency.injection.internal.fortest.D;
+import coded.dependency.injection.internal.fortest.Interface1;
+import coded.dependency.injection.internal.fortest.Interface1And2Impl;
+import coded.dependency.injection.internal.fortest.Interface1Dependent;
+import coded.dependency.injection.internal.fortest.Interface2;
+import coded.dependency.injection.internal.fortest.Interface2Dependent;
 import coded.dependency.injection.internal.fortest.MyApplicationImpl;
 import coded.dependency.injection.internal.fortest.MyApplicationInterface;
 import coded.dependency.injection.internal.fortest.MyServiceImplementation;
@@ -317,5 +322,20 @@ public class InjectionTest extends TestBase {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	@Test
+	public void testServiceImplementsMultipleInterfaces() {
+		Injector injector = Injector.getContext("app");
+		injector.defineConstruction(Interface1.class, Interface1And2Impl::new)
+			.defineConstruction(Interface2.class, () -> injector.getBean(Interface1And2Impl.class))
+			.makeBeans(Interface1Dependent.class)
+			.makeBeans(Interface2Dependent.class);
+
+		Interface1Dependent bean1 = injector.getBean(Interface1Dependent.class);
+		Interface2Dependent bean2 = injector.getBean(Interface2Dependent.class);
+
+		assertEquals("implementation of Interface1", bean1.getInfo());
+		assertEquals("implementation of Interface2", bean2.getInfo());
 	}
 }

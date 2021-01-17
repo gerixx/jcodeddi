@@ -36,6 +36,8 @@ public class _WiringHelper implements Injector {
 	private final Map<String, Supplier<?>> objectConstructionMap = new HashMap<>();
 	private final Map<String, Consumer<?>> objectStopMap = new HashMap<>();
 	private final Map<String, Consumer<?>> objectStartMap = new HashMap<>();
+	private final Set<String> objectStartedSet = new HashSet<>();
+	private final Set<String> objectStoppedSet = new HashSet<>();
 	private final Set<String> objectCreationPending = new HashSet<>();
 	private final List<String> makeBeansList = new ArrayList<>();
 	private final String contextName;
@@ -177,22 +179,30 @@ public class _WiringHelper implements Injector {
 	}
 
 	private void startDependencies(String name, Object object) {
+		if (objectStartedSet.contains(name)) {
+			return;
+		}
+
 		if (object instanceof Dependent) {
 			List<Dependency<?>> dependencies = getDependencies((Dependent) object);
-			dependencies.forEach(dep -> {
-				startDependencies(dep.get()
-					.getClass()
-					.getName(), dep.get());
-			});
+			if (dependencies != null) {
+				dependencies.forEach(dep -> {
+					startDependencies(dep.get()
+						.getClass()
+						.getName(), dep.get());
+				});
+			}
 		}
 		Consumer<?> consumer = objectStartMap.get(name);
 		StopWatch start = StopWatch.start();
 		if (consumer != null) {
 			consumer.accept(this.getTypedObject(name));
+			objectStartedSet.add(name);
 			loginfo(_WiringHelper.class, () -> "Started " + getPrintName(this.getTypedObject(name))
 					+ " using Consumer in " + start.stop() + "ms.");
 		} else if (objectMap.get(name) instanceof Lifecycle) {
 			((Lifecycle) objectMap.get(name)).start();
+			objectStartedSet.add(name);
 			loginfo(_WiringHelper.class, () -> "Started " + getPrintName(this.getTypedObject(name))
 					+ " using Lifecycle in " + start.stop() + "ms.");
 		}
@@ -211,24 +221,32 @@ public class _WiringHelper implements Injector {
 	}
 
 	private void stopDependencies(String name, Object object) {
-		if (object instanceof Dependent) {
-			List<Dependency<?>> dependencies = getDependencies((Dependent) object);
-			dependencies.forEach(dep -> {
-				stopDependencies(dep.get()
-					.getClass()
-					.getName(), dep.get());
-			});
+		if (objectStoppedSet.contains(name)) {
+			return;
 		}
+
 		StopWatch start = StopWatch.start();
 		Consumer<?> consumer = objectStopMap.get(name);
 		if (consumer != null) {
 			consumer.accept(this.getTypedObject(name));
+			objectStoppedSet.add(name);
 			loginfo(_WiringHelper.class, () -> "Stopped " + getPrintName(this.getTypedObject(name))
 					+ " using Consumer in " + start.stop() + "ms.");
 		} else if (objectMap.get(name) instanceof Lifecycle) {
 			((Lifecycle) objectMap.get(name)).stop();
+			objectStoppedSet.add(name);
 			loginfo(_WiringHelper.class, () -> "Stopped " + getPrintName(this.getTypedObject(name))
 					+ " using Lifecycle in " + start.stop() + "ms.");
+		}
+		if (object instanceof Dependent) {
+			List<Dependency<?>> dependencies = getDependencies((Dependent) object);
+			if (dependencies != null) {
+				dependencies.forEach(dep -> {
+					stopDependencies(dep.get()
+						.getClass()
+						.getName(), dep.get());
+				});
+			}
 		}
 	}
 
@@ -270,27 +288,29 @@ public class _WiringHelper implements Injector {
 	private void printDependencies(PrintStream out, Dependent object) {
 		List<Dependency<?>> dependencies = getDependencies(object);
 		indent += "  ";
-		dependencies.forEach(dep -> {
-			out.print(indent);
-			out.print("-> ");
-			Object target = dep.get();
-			if (target == null) {
-				out.println("UNRESOLVED dependency to: " + dep.getTargetClass()
-					.getName());
-			} else {
-				String targetName = target.getClass()
-					.getName();
-				String targetNameToPrint = getPrintName(targetName, target);
-				out.println(targetNameToPrint);
-				if (!traversedObjects.contains(targetName)) {
-					traversedObjects.add(targetName);
-					if (Dependent.class.isAssignableFrom(dep.get()
-						.getClass())) {
-						printDependencies(out, (Dependent) dep.get());
+		if (dependencies != null) {
+			dependencies.forEach(dep -> {
+				out.print(indent);
+				out.print("-> ");
+				Object target = dep.get();
+				if (target == null) {
+					out.println("UNRESOLVED dependency to: " + dep.getTargetClass()
+						.getName());
+				} else {
+					String targetName = target.getClass()
+						.getName();
+					String targetNameToPrint = getPrintName(targetName, target);
+					out.println(targetNameToPrint);
+					if (!traversedObjects.contains(targetName)) {
+						traversedObjects.add(targetName);
+						if (Dependent.class.isAssignableFrom(dep.get()
+							.getClass())) {
+							printDependencies(out, (Dependent) dep.get());
+						}
 					}
 				}
-			}
-		});
+			});
+		}
 		indent = indent.substring(0, indent.length() - 2);
 	}
 
